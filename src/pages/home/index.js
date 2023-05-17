@@ -5,7 +5,22 @@ import Typography from '@mui/material/Typography'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 
+import axios from 'axios'
+import React, { useState, useEffect } from 'react'
+
 const Home = () => {
+  const [questions, setQuestions] = React.useState([{}])
+  const url = 'http://localhost/reactProject/maroonTest/testingListing.php'
+  useEffect(() => {
+    axios
+      .get(url)
+      .then(response => response.data)
+      .then(data => {
+        setQuestions(data)
+      })
+    console.log(questions)
+  }, [])
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
@@ -25,12 +40,18 @@ const Home = () => {
           <CardHeader title='ACL and JWT 🔒'></CardHeader>
           <CardContent>
             <Typography sx={{ mb: 2 }}>
-              Access Control (ACL) and Authentication (JWT) are the two main security features of our template and are implemented in the starter-kit as well.
+              Access Control (ACL) and Authentication (JWT) are the two main security features of our template and are
+              implemented in the starter-kit as well.
             </Typography>
             <Typography>Please read our Authentication and ACL Documentations to get more out of them.</Typography>
           </CardContent>
         </Card>
       </Grid>
+      {questions?.map((admin, index) => (
+        <div key={index}>
+          <h1>{admin.id}</h1>
+        </div>
+      ))}
     </Grid>
   )
 }

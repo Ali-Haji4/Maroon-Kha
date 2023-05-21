@@ -29,6 +29,8 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
+import Snackbar from '@mui/material'
+import Alert from '@mui/material'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -51,8 +53,9 @@ import { fetchData, deleteUser } from 'src/store/apps/user'
 import axios from 'axios'
 
 // ** Custom Table Components Imports
-import TableHeader from 'src/views/apps/user/list/TableHeader'
+import QuestionsHeader from 'src/views/apps/user/list/QuestionsHeader'
 import AddUserDrawer from 'src/views/apps/user/list/AddUserDrawer'
+import { Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, TextField } from '@mui/material'
 
 export default function QuestionManagement() {
   const [admins, setAdmins] = React.useState([{}])
@@ -74,6 +77,8 @@ export default function QuestionManagement() {
   const [pageSize, setPageSize] = useState(10)
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [deleteID, setDeleteID] = React.useState({ id: '' })
+  const [questionText, setQuestionText] = React.useState({ questionText: '' })
+  const [editedQuestionText, setEditedQuestionText] = React.useState({ questionText: '', id: '' })
 
   useEffect(() => {
     if (competition === 'youth') {
@@ -91,7 +96,7 @@ export default function QuestionManagement() {
           setQuestions(data)
         })
     }
-  }, [competition])
+  }, [competition, questions])
 
   const handleFilter = useCallback(val => {
     setValue(val)
@@ -127,13 +132,20 @@ export default function QuestionManagement() {
   function deleteQuestion(id) {
     if (competition === 'youth') {
       console.log('delete ID is ' + id)
+
       setDeleteID((deleteID.id = id))
-      console.log(deleteID)
+      console.log(deleteID + '<- ID')
       axios
         .post('http://localhost/reactProject/maroonTest/deleteQuestion2.php', deleteID)
         .then(res => console.log(res.data))
-      alert('Question Deleted Succesfully')
-      window.location.reload(true)
+
+      // return (
+      //   <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+      //     <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
+      //       This is a success message!
+      //     </Alert>
+      //   </Snackbar>
+      // )
     } else {
       console.log('delete ID is ' + id)
       setDeleteID((deleteID.id = id))
@@ -142,8 +154,58 @@ export default function QuestionManagement() {
         .post('http://localhost/reactProject/maroonTest/deleteQuestion3.php', deleteID)
         .then(res => console.log(res.data))
       alert('Question Deleted Succesfully')
-      window.location.reload(true)
     }
+  }
+
+  function handleAddQuestion() {
+    axios
+      .post('http://localhost/reactProject/maroonTest/insertQuestion.php', questionText)
+      .then(res => console.log(res.data))
+    handleClose()
+  }
+
+  function handleQuestionChange(event) {
+    setQuestionText({ questionText: event.target.value })
+    console.log(questionText)
+  }
+
+  function handleEditQuestionChange(event) {
+    setEditedQuestionText({ ...editedQuestionText, questionText: event.target.value })
+    console.log(editedQuestionText)
+  }
+
+  const [open, setOpen] = React.useState(false)
+  const [openEdit, setOpenEdit] = React.useState(false)
+
+  const handleClickOpen = () => {
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+  }
+
+  const handleClickEditOpen = () => {
+    setOpenEdit(true)
+  }
+
+  const handleEditClose = () => {
+    setOpenEdit(false)
+  }
+
+  // const handleEditQuestion = (id, text) => {
+  //   setEditedQuestionText({ questionText: text, id: id })
+  //   console.log('Clicked' + id + text)
+  //   console.log(editedQuestionText.id + editedQuestionText.questionText)
+  //   handleSubmission()
+  // }
+
+  const handleEditQuestion = () => {
+    console.log(editedQuestionText)
+    axios
+      .post('http://localhost/reactProject/maroonTest/updateQuestion.php', editedQuestionText)
+      .then(res => console.log(res.data))
+    handleEditClose()
   }
 
   return (
@@ -173,7 +235,11 @@ export default function QuestionManagement() {
               </Grid>
             </Grid>
           </CardContent>
+
+          <QuestionsHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
+
           <Divider />
+
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label='customized table'>
               <TableHead>
@@ -185,38 +251,105 @@ export default function QuestionManagement() {
               </TableHead>
               <TableBody>
                 {questions?.map((item, index) => (
-                  <StyledTableRow key={index}>
-                    <StyledTableCell component='th' scope='row'>
+                  <TableRow key={index}>
+                    <TableCell component='th' scope='row'>
                       {item.id}
-                    </StyledTableCell>
+                    </TableCell>
                     <StyledTableCell>{item.text}</StyledTableCell>
-                    <StyledTableCell>
-                      <Stack direction='row' spacing={2}>
-                        <Button
-                          variant='contained'
-                          type='button'
-                          className='reportBtn'
-                          onClick={() => returnEdit(item.id, item.text)}
-                        >
-                          Edit
-                        </Button>
-                        {/* <Button variant='outlined' type='submit' className='reportBtn'>
-                          Delete{' '}
-                        </Button> */}
-                        <IconButton size='small' onClick={() => deleteQuestion(item.id)} sx={{ color: 'text.primary' }}>
-                          <Icon icon='mdi:delete' fontSize={20} />
-                        </IconButton>
-                      </Stack>
-                    </StyledTableCell>
-                  </StyledTableRow>
+                    <TableCell>
+                      <Button
+                        variant='contained'
+                        type='button'
+                        className='reportBtn'
+                        onClick={event => {
+                          event.preventDefault()
+                          handleClickEditOpen()
+                          setEditedQuestionText({ ...editedQuestionText, questionText: item.text, id: item.id })
+                        }}
+                      >
+                        Edit
+                      </Button>
+
+                      <IconButton
+                        size='small'
+                        sx={{ color: 'text.primary' }}
+                        onClick={event => {
+                          event.preventDefault()
+                          deleteQuestion(item.id)
+                          setDeleteID(prevValue => ({ ...prevValue, id: item.id }))
+                        }}
+                      >
+                        <Icon icon='mdi:delete' fontSize={20} />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
-          {/* <TableHeader value={value} handleFilter={handleFilter} toggle={toggleAddUserDrawer} /> */}
-          {/* <AddUserDrawer open={addUserOpen} toggle={toggleAddUserDrawer} /> */}
         </Card>
       </Grid>
+      {/* The dialogue box of Adding a Question */}
+
+      <Dialog fullWidth maxWidth='md' onClose={handleClose} aria-labelledby='customized-dialog-title' open={open}>
+        <DialogTitle id='customized-dialog-title' onClose={handleClose}>
+          Adding a new Question
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin='dense'
+            id='outlined-multiline-flexible'
+            label='Question Text'
+            type='text'
+            fullWidth
+            variant='standard'
+            multiline
+            name='questionText'
+            onChange={handleQuestionChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddQuestion} variant='contained'>
+            Add Question
+          </Button>
+
+          <Button onClick={handleClose} variant='outlined'>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog fullWidth maxWidth='md' onClose={handleClose} aria-labelledby='customized-dialog-title' open={openEdit}>
+        <DialogTitle id='customized-dialog-title' onClose={handleClose}>
+          Editing Question
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin='dense'
+            id='outlined-multiline-flexible'
+            label='Question Text'
+            type='text'
+            fullWidth
+            variant='standard'
+            multiline
+            name='questionText'
+            onChange={handleEditQuestionChange}
+            defaultValue={editedQuestionText.questionText}
+            onFocus={e => e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditQuestion} variant='contained'>
+            Submit
+          </Button>
+
+          <Button onClick={handleEditClose} variant='outlined'>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   )
 }

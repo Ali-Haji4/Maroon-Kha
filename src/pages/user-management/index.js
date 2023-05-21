@@ -20,6 +20,7 @@ import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
 import CardContent from '@mui/material/CardContent'
 import Select from '@mui/material/Select'
+import { Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, TextField } from '@mui/material'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -70,10 +71,20 @@ export default function UserManagement() {
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [deleteID, setDeleteID] = React.useState({ id: '' })
 
+  //Editing States
+  const [editedAdminData, setEditedAdminData] = React.useState([{ id: '', firstName: '', lastName: '', email: '' }])
+  const [editedJudgeData, setEditedJudgeData] = React.useState([{ id: '', firstName: '', lastName: '', email: '' }])
+
+  const [editedParticipantData, setEditedParticipantData] = React.useState([
+    { id: '', firstName: '', lastName: '', email: '' }
+  ])
+
+  //Links for the PHP files
   const urlJudges = 'http://localhost/reactProject/maroonTest/judgesList.php'
   const urlAdmins = 'http://localhost/reactProject/maroonTest/adminsList.php'
   const urlParticipants = 'http://localhost/reactProject/maroonTest/participantsList.php'
 
+  //Fetching data according to the current role
   useEffect(() => {
     if (role === 'participant') {
       //REPLACED THE URL ONCE THE PARTICIPANT TABLE IS LINKED
@@ -117,6 +128,7 @@ export default function UserManagement() {
   }, [])
   const toggleAddUserDrawer = () => setAddUserOpen(!addUserOpen)
 
+  //Sylized components for the table
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
       backgroundColor: theme.palette.common.black,
@@ -147,7 +159,6 @@ export default function UserManagement() {
         .post('http://localhost/reactProject/maroonTest/deleteParticipant.php', deleteID)
         .then(res => console.log(res.data))
       alert('Participant Deleted Succesfully')
-      window.location.reload(true)
     } else if (role === 'admin') {
       console.log('delete ID is ' + id)
       setDeleteID((deleteID.id = id))
@@ -156,7 +167,6 @@ export default function UserManagement() {
         .post('http://localhost/reactProject/maroonTest/deleteAdmin2.php', deleteID)
         .then(res => console.log(res.data))
       alert('Admin Deleted Succesfully')
-      window.location.reload(true)
     } else {
       console.log('delete ID is ' + id)
       setDeleteID((deleteID.id = id))
@@ -165,8 +175,42 @@ export default function UserManagement() {
         .post('http://localhost/reactProject/maroonTest/deleteJudge2.php', deleteID)
         .then(res => console.log(res.data))
       alert('Judge Deleted Succesfully')
-      window.location.reload(true)
     }
+  }
+
+  const handleEditAdmin = () => {
+    console.log(editedAdminData)
+    axios
+      .post('http://localhost/reactProject/maroonTest/updateAdmin.php', editedAdminData)
+      .then(res => console.log(res.data))
+    handleEditClose()
+  }
+
+  const [open, setOpen] = React.useState(false)
+  const [openEdit, setOpenEdit] = React.useState(false)
+
+  const handleClickOpen = () => {
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+  }
+
+  const handleClickEditOpen = () => {
+    setOpenEdit(true)
+  }
+
+  const handleEditClose = () => {
+    setOpenEdit(false)
+  }
+
+  function handleAdminDataChange(event) {
+    setEditedAdminData({
+      ...editedAdminData,
+      [event.target.name]: event.target.value
+    })
+    console.log(editedAdminData)
   }
 
   return (
@@ -247,6 +291,7 @@ export default function UserManagement() {
                       <TableRow>
                         <StyledTableCell>User ID</StyledTableCell>
                         <StyledTableCell>Name</StyledTableCell>
+                        <StyledTableCell>Email</StyledTableCell>
                         <StyledTableCell>Action</StyledTableCell>
                       </TableRow>
                     </TableHead>
@@ -257,13 +302,24 @@ export default function UserManagement() {
                             {item.id}
                           </StyledTableCell>
                           <StyledTableCell>{item.name}</StyledTableCell>
+                          <StyledTableCell>{item.email}</StyledTableCell>
                           <StyledTableCell>
                             <Stack direction='row' spacing={2}>
                               <Button
                                 variant='contained'
                                 type='button'
                                 className='reportBtn'
-                                onClick={() => returnEdit(item.id, item.name)}
+                                onClick={event => {
+                                  event.preventDefault()
+                                  handleClickEditOpen()
+                                  setEditedAdminData({
+                                    ...editedAdminData,
+                                    id: item.id,
+                                    firstName: item.first_name,
+                                    lastName: item.last_name,
+                                    email: item.email
+                                  })
+                                }}
                               >
                                 Edit
                               </Button>
@@ -339,6 +395,67 @@ export default function UserManagement() {
           {/* <AddUserDrawer open={addUserOpen} toggle={toggleAddUserDrawer} /> */}
         </Card>
       </Grid>
+
+      {/* Dialog for Add User or Edit User */}
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        onClose={handleEditClose}
+        aria-labelledby='customized-dialog-title'
+        open={openEdit}
+      >
+        <DialogTitle id='customized-dialog-title' onClose={handleEditClose}>
+          Editing Admin Information | ID {editedAdminData.id}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            margin='dense'
+            id='outlined-multiline-flexible'
+            label='First Name'
+            type='text'
+            fullWidth
+            variant='standard'
+            multiline
+            name='firstName'
+            defaultValue={editedAdminData.firstName}
+            onChange={handleAdminDataChange}
+          />
+          <TextField
+            margin='dense'
+            id='outlined-multiline-flexible'
+            label='Last Name'
+            type='text'
+            fullWidth
+            variant='standard'
+            multiline
+            name='lastName'
+            defaultValue={editedAdminData.lastName}
+            onChange={handleAdminDataChange}
+          />
+          <TextField
+            margin='dense'
+            id='outlined-multiline-flexible'
+            label='Email Name'
+            type='email'
+            fullWidth
+            variant='standard'
+            multiline
+            name='email'
+            defaultValue={editedAdminData.email}
+            onChange={handleAdminDataChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' onClick={handleEditAdmin}>
+            Submit
+          </Button>
+
+          <Button onClick={handleEditClose} variant='outlined'>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   )
 }

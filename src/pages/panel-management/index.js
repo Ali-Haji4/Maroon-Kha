@@ -46,7 +46,7 @@ const ACLPage = () => {
   const [selectedCheckbox, setSelectedCheckbox] = useState([])
   const [isIndeterminateCheckbox, setIsIndeterminateCheckbox] = useState(false)
   const handleClickOpen = () => setOpen(true)
-  const [submittedCheckbox, setSubmittedCheckbox] = useState({ id: [11, 12], panel_id: '' })
+  const [submittedCheckbox, setSubmittedCheckbox] = useState({ id: [], panel_id: '' })
   const [currentPanelID, setCurrentPanelID] = useState()
 
   const rolesArr = [
@@ -112,9 +112,12 @@ const ACLPage = () => {
       axios
         .post('http://localhost/reactProject/maroonTest/insertPanel.php', submittedCheckbox)
         .then(res => console.log(res.data))
-    } else {
+
+      console.log('Title:' + dialogTitle)
+    } else if (dialogTitle === 'Edit') {
       console.log('Beginning submission')
-      setSubmittedCheckbox(existingValues => ({ ...submittedCheckbox, panel_id: currentPanelID, id: selectedCheckbox }))
+
+      setSubmittedCheckbox((submittedCheckbox.id = selectedCheckbox))
 
       // setSubmittedCheckbox(((submittedCheckbox = selectedCheckbox), (submittedCheckbox.panel_id = currentPanelID)))
       console.log(submittedCheckbox)
@@ -122,8 +125,10 @@ const ACLPage = () => {
       axios
         .post('http://localhost/reactProject/maroonTest/updatePanel.php', submittedCheckbox)
         .then(res => console.log(res.data))
-      console.log('HHAHA EDITING')
-      console.log(currentPanelID)
+      console.log('Current panel ID:' + currentPanelID + ' Title:' + dialogTitle + ' Checkbox ' + submittedCheckbox.id)
+      console.log()
+    } else {
+      console.log('ERROR 404')
     }
 
     setOpen(false)
@@ -227,7 +232,11 @@ const ACLPage = () => {
                             e.preventDefault()
                             handleClickOpen()
                             setDialogTitle('Edit')
-                            setCurrentPanelID(item.id)
+                            setSubmittedCheckbox(existingValues => ({
+                              ...existingValues,
+                              panel_id: item.id,
+                              id: selectedCheckbox
+                            }))
                           }}
                         >
                           Edit Panel
@@ -261,6 +270,10 @@ const ACLPage = () => {
                           onClick={() => {
                             handleClickOpen()
                             setDialogTitle('Add')
+                            setSubmittedCheckbox(existingValues => ({
+                              ...existingValues,
+                              id: selectedCheckbox
+                            }))
                           }}
                         >
                           Add Panel
@@ -289,6 +302,7 @@ const ACLPage = () => {
 
           <h4> {submittedCheckbox.id}</h4>
           <h4> {selectedCheckbox}</h4>
+          <h4>Current Panel_id: {submittedCheckbox.panel_id}</h4>
         </Card>
       </Grid>
       {/* THIS IS THE CREATE section */}

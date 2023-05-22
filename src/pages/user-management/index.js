@@ -72,7 +72,9 @@ export default function UserManagement() {
   const [deleteID, setDeleteID] = React.useState({ id: '' })
 
   //Editing States
-  const [editedAdminData, setEditedAdminData] = React.useState([{ id: '', firstName: '', lastName: '', email: '' }])
+  const [editedAdminData, setEditedAdminData] = React.useState([
+    { id: '', firstName: '', lastName: '', email: '', password: '', confirmedPassword: '' }
+  ])
   const [editedJudgeData, setEditedJudgeData] = React.useState([{ id: '', firstName: '', lastName: '', email: '' }])
 
   const [editedParticipantData, setEditedParticipantData] = React.useState([
@@ -87,9 +89,9 @@ export default function UserManagement() {
   //Fetching data according to the current role
   useEffect(() => {
     if (role === 'participant') {
-      //REPLACED THE URL ONCE THE PARTICIPANT TABLE IS LINKED
+      //REPLACE THE URL ONCE THE PARTICIPANT TABLE IS LINKED
       axios
-        .get(urlAdmins)
+        .get(urlParticipants)
         .then(response => response.data)
         .then(data => {
           setRoleFetched(data)
@@ -126,7 +128,6 @@ export default function UserManagement() {
   const handleStatusChange = useCallback(e => {
     setStatus(e.target.value)
   }, [])
-  const toggleAddUserDrawer = () => setAddUserOpen(!addUserOpen)
 
   //Sylized components for the table
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -179,11 +180,47 @@ export default function UserManagement() {
   }
 
   const handleEditAdmin = () => {
-    console.log(editedAdminData)
-    axios
-      .post('http://localhost/reactProject/maroonTest/updateAdmin.php', editedAdminData)
-      .then(res => console.log(res.data))
-    handleEditClose()
+    if (role === 'admin') {
+      console.log(editedAdminData)
+      axios
+        .post('http://localhost/reactProject/maroonTest/updateAdmin.php', editedAdminData)
+        .then(res => console.log(res.data))
+      handleEditClose()
+    } else if (role === 'judge') {
+      console.log(editedJudgeData)
+      axios
+        .post('http://localhost/reactProject/maroonTest/updateJudge.php', editedJudgeData)
+        .then(res => console.log(res.data))
+      handleEditClose()
+    } else {
+      console.log(editedParticipantData)
+      axios
+        .post('http://localhost/reactProject/maroonTest/updateParticipant.php', editedParticipantData)
+        .then(res => console.log(res.data))
+      handleEditClose()
+    }
+  }
+
+  const handleAdd = () => {
+    if (role === 'admin') {
+      console.log(editedAdminData)
+      axios
+        .post('http://localhost/reactProject/maroonTest/insertAdmin.php', editedAdminData)
+        .then(res => console.log(res.data))
+      handleClose()
+    } else if (role === 'judge') {
+      console.log(editedJudgeData)
+      axios
+        .post('http://localhost/reactProject/maroonTest/insertJudge.php', editedJudgeData)
+        .then(res => console.log(res.data))
+      handleClose()
+    } else {
+      console.log(editedParticipantData)
+      axios
+        .post('http://localhost/reactProject/maroonTest/insertParticipant.php', editedParticipantData)
+        .then(res => console.log(res.data))
+      handleClose()
+    }
   }
 
   const [open, setOpen] = React.useState(false)
@@ -205,12 +242,26 @@ export default function UserManagement() {
     setOpenEdit(false)
   }
 
-  function handleAdminDataChange(event) {
-    setEditedAdminData({
-      ...editedAdminData,
-      [event.target.name]: event.target.value
-    })
-    console.log(editedAdminData)
+  function handleDataChange(event) {
+    if (role === 'admin') {
+      setEditedAdminData({
+        ...editedAdminData,
+        [event.target.name]: event.target.value
+      })
+      console.log(editedAdminData)
+    } else if (role === 'judge') {
+      setEditedJudgeData({
+        ...editedJudgeData,
+        [event.target.name]: event.target.value
+      })
+      console.log(editedJudgeData)
+    } else {
+      setEditedParticipantData({
+        ...editedParticipantData,
+        [event.target.name]: event.target.value
+      })
+      console.log(editedParticipantData)
+    }
   }
 
   return (
@@ -241,51 +292,92 @@ export default function UserManagement() {
               </Grid>
 
               {role === 'participant' && (
-                <Grid item sm={4} xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel id='plan-select'>Select Competition</InputLabel>
-                    <Select
-                      fullWidth
-                      value={plan}
-                      id='select-plan'
-                      label='Select Plan'
-                      labelId='plan-select'
-                      onChange={handlePlanChange}
-                      inputProps={{ placeholder: 'Select Competition' }}
-                    >
-                      <MenuItem value=''>Select Competition</MenuItem>
-                      <MenuItem value='youth'>Youth Award</MenuItem>
-                      <MenuItem value='standard'>Standard Award</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              )}
-              {role === 'participant' && (
-                <Grid item sm={4} xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel id='status-select'>Select Status</InputLabel>
-                    <Select
-                      fullWidth
-                      value={status}
-                      id='select-status'
-                      label='Select Status'
-                      labelId='status-select'
-                      onChange={handleStatusChange}
-                      inputProps={{ placeholder: 'Select Status' }}
-                    >
-                      <MenuItem value=''>Select Status</MenuItem>
-                      <MenuItem value='pending'>Pending</MenuItem>
-                      <MenuItem value='active'>Active</MenuItem>
-                      <MenuItem value='inactive'>Inactive</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
+                <>
+                  <Grid item sm={4} xs={12}>
+                    <FormControl fullWidth>
+                      <InputLabel id='status-select'>Select Status</InputLabel>
+                      <Select
+                        fullWidth
+                        value={status}
+                        id='select-status'
+                        label='Select Status'
+                        labelId='status-select'
+                        onChange={handleStatusChange}
+                        inputProps={{ placeholder: 'Select Status' }}
+                      >
+                        <MenuItem value=''>Select Status</MenuItem>
+                        <MenuItem value='pending'>Pending</MenuItem>
+                        <MenuItem value='active'>Active</MenuItem>
+                        <MenuItem value='inactive'>Inactive</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <TableContainer component={Paper}>
+                    <Divider />
+                    <TableHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
+                    <Table sx={{ minWidth: 700 }} aria-label='customized table'>
+                      <TableHead>
+                        <TableRow>
+                          <StyledTableCell>User ID</StyledTableCell>
+                          <StyledTableCell>Name</StyledTableCell>
+                          <StyledTableCell>Email</StyledTableCell>
+                          <StyledTableCell>Status</StyledTableCell>
+                          <StyledTableCell>Action</StyledTableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {RoleFetched?.map((item, index) => (
+                          <StyledTableRow key={index}>
+                            <StyledTableCell component='th' scope='row'>
+                              {item.id}
+                            </StyledTableCell>
+                            <StyledTableCell>{item.name}</StyledTableCell>
+                            <StyledTableCell>{item.email}</StyledTableCell>
+                            <StyledTableCell>{item.status}</StyledTableCell>
+                            <StyledTableCell>
+                              <Stack direction='row' spacing={2}>
+                                <Button
+                                  variant='contained'
+                                  type='button'
+                                  className='reportBtn'
+                                  onClick={event => {
+                                    event.preventDefault()
+                                    handleClickEditOpen()
+                                    setEditedAdminData({
+                                      ...editedAdminData,
+                                      id: item.id,
+                                      firstName: item.first_name,
+                                      lastName: item.last_name,
+                                      email: item.email
+                                    })
+                                  }}
+                                >
+                                  Edit
+                                </Button>
+                                {/* <Button variant='outlined' type='submit' className='reportBtn'>
+                                        Delete{' '}
+                                      </Button> */}
+                                <IconButton
+                                  size='small'
+                                  onClick={() => deleteUser(item.id)}
+                                  sx={{ color: 'text.primary' }}
+                                >
+                                  <Icon icon='mdi:delete' fontSize={20} />
+                                </IconButton>
+                              </Stack>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
               )}
 
               {role === 'admin' && (
                 <TableContainer component={Paper}>
                   <Divider />
-                  <TableHeader value={value} handleFilter={handleFilter} toggle={toggleAddUserDrawer} />
+                  <TableHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
                   <Table sx={{ minWidth: 700 }} aria-label='customized table'>
                     <TableHead>
                       <TableRow>
@@ -345,12 +437,15 @@ export default function UserManagement() {
               {role === 'judge' && (
                 <TableContainer component={Paper}>
                   <Divider />
-                  <TableHeader value={value} handleFilter={handleFilter} toggle={toggleAddUserDrawer} />
+                  <TableHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
                   <Table sx={{ minWidth: 700 }} aria-label='customized table'>
                     <TableHead>
                       <TableRow>
                         <StyledTableCell>User ID</StyledTableCell>
                         <StyledTableCell>Name</StyledTableCell>
+                        <StyledTableCell>Email</StyledTableCell>
+                        <StyledTableCell>Panel</StyledTableCell>
+                        <StyledTableCell>Section ID</StyledTableCell>
                         <StyledTableCell>Action</StyledTableCell>
                       </TableRow>
                     </TableHead>
@@ -361,13 +456,26 @@ export default function UserManagement() {
                             {item.id}
                           </StyledTableCell>
                           <StyledTableCell>{item.name}</StyledTableCell>
+                          <StyledTableCell>{item.email}</StyledTableCell>
+                          <StyledTableCell>{item.panel_id}</StyledTableCell>
+                          <StyledTableCell>{item.sectionID}</StyledTableCell>
                           <StyledTableCell>
                             <Stack direction='row' spacing={2}>
                               <Button
                                 variant='contained'
                                 type='button'
                                 className='reportBtn'
-                                onClick={() => returnEdit(item.id, item.name)}
+                                onClick={event => {
+                                  event.preventDefault()
+                                  handleClickEditOpen()
+                                  setEditedJudgeData({
+                                    ...editedJudgeData,
+                                    id: item.id,
+                                    firstName: item.first_name,
+                                    lastName: item.last_name,
+                                    email: item.email
+                                  })
+                                }}
                               >
                                 Edit
                               </Button>
@@ -396,8 +504,77 @@ export default function UserManagement() {
         </Card>
       </Grid>
 
-      {/* Dialog for Add User or Edit User */}
+      {/* Dialog for Add User and Edit User */}
 
+      {/* Adding Admin Dialog */}
+      <Dialog fullWidth maxWidth='md' onClose={handleClose} aria-labelledby='customized-dialog-title' open={open}>
+        <DialogTitle id='customized-dialog-title' onClose={handleClose}>
+          Adding a new {role}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            margin='dense'
+            id='outlined-multiline-flexible-email'
+            label='Email'
+            type='email'
+            fullWidth
+            variant='standard'
+            name='email'
+            onChange={handleDataChange}
+          />
+          <TextField
+            margin='dense'
+            id='outlined-password-input'
+            label='Password'
+            type='password'
+            fullWidth
+            variant='standard'
+            name='password'
+            onChange={handleDataChange}
+          />
+          <TextField
+            margin='dense'
+            id='outlined-confirm-password-input'
+            label='Confirm Password'
+            type='password'
+            fullWidth
+            variant='standard'
+            name='confirmedPassword'
+            onChange={handleDataChange}
+          />
+          <TextField
+            margin='dense'
+            id='outlined-multiline-flexible-fName'
+            label='First Name'
+            type='text'
+            fullWidth
+            variant='standard'
+            name='firstName'
+            onChange={handleDataChange}
+          />
+          <TextField
+            margin='dense'
+            id='outlined-multiline-flexible-lName'
+            label='Last Name'
+            type='text'
+            fullWidth
+            variant='standard'
+            name='lastName'
+            onChange={handleDataChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant='contained' onClick={handleAdd}>
+            Submit
+          </Button>
+
+          <Button onClick={handleClose} variant='outlined'>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Editing Admin Dialog */}
       <Dialog
         fullWidth
         maxWidth='md'
@@ -406,44 +583,44 @@ export default function UserManagement() {
         open={openEdit}
       >
         <DialogTitle id='customized-dialog-title' onClose={handleEditClose}>
-          Editing Admin Information | ID {editedAdminData.id}
+          Editing {role} Information | ID {role === 'admin' ? editedAdminData.id : editedJudgeData.id}
         </DialogTitle>
         <DialogContent>
           <TextField
             margin='dense'
-            id='outlined-multiline-flexible'
+            id='outlined-multiline-flexible-fName'
             label='First Name'
             type='text'
             fullWidth
             variant='standard'
             multiline
             name='firstName'
-            defaultValue={editedAdminData.firstName}
-            onChange={handleAdminDataChange}
+            defaultValue={role === 'admin' ? editedAdminData.firstName : editedJudgeData.firstName}
+            onChange={handleDataChange}
           />
           <TextField
             margin='dense'
-            id='outlined-multiline-flexible'
+            id='outlined-multiline-flexible-lName'
             label='Last Name'
             type='text'
             fullWidth
             variant='standard'
             multiline
             name='lastName'
-            defaultValue={editedAdminData.lastName}
-            onChange={handleAdminDataChange}
+            defaultValue={role === 'admin' ? editedAdminData.lastName : editedJudgeData.lastName}
+            onChange={handleDataChange}
           />
           <TextField
             margin='dense'
-            id='outlined-multiline-flexible'
+            id='outlined-multiline-flexible-email'
             label='Email Name'
             type='email'
             fullWidth
             variant='standard'
             multiline
             name='email'
-            defaultValue={editedAdminData.email}
-            onChange={handleAdminDataChange}
+            defaultValue={role === 'admin' ? editedAdminData.email : editedJudgeData.email}
+            onChange={handleDataChange}
           />
         </DialogContent>
         <DialogActions>

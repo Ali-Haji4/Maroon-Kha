@@ -24,6 +24,20 @@ const navigation = () => {
       title: 'Statistics',
       path: '/statistics',
       icon: 'wpf:statistics'
+    },
+    {
+      path: '/acl',
+      action: 'read',
+      subject: 'acl-page',
+      icon: 'mdi:shield-outline',
+      title: 'Access Control'
+    },
+    {
+      path: '/loginJudge',
+      action: 'read',
+      subject: 'login-judge',
+      icon: 'mdi:shield-outline',
+      title: 'Access Control'
     }
   ]
 }

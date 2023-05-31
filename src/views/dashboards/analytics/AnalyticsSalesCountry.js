@@ -1,3 +1,6 @@
+import React, { useState, useEffect, useCallback } from 'react'
+import axios from 'axios'
+
 // ** MUI Imports
 import Card from '@mui/material/Card'
 import { useTheme } from '@mui/material/styles'
@@ -11,14 +14,59 @@ import ReactApexcharts from 'src/@core/components/react-apexcharts'
 // ** Util Import
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 
-const series = [
-  {
-    name: 'Sales',
-    data: [17165, 13850, 12375, 9567, 7880]
-  }
-]
-
 const AnalyticsSalesCountry = () => {
+  const urlCountries = 'http://localhost/reactProject/maroonTest/uniqueCountries.php'
+  const urlMostParticipated = 'http://localhost/reactProject/maroonTest/mostParticipatedCountries.php'
+  const [uniqueCountries, setUniqueCountries] = React.useState([])
+  const [mostParticipated, setMostParticipated] = React.useState([])
+
+  //Fetching data according to the current role
+  useEffect(() => {
+    axios
+      .get(urlCountries)
+      .then(response => response.data)
+      .then(data => {
+        setUniqueCountries(data)
+      })
+    axios
+      .get(urlMostParticipated)
+      .then(response => response.data)
+      .then(data => {
+        setMostParticipated(data)
+      })
+    console.log('reached here')
+
+    console.log('looping')
+  }, [])
+
+  const newArray = mostParticipated?.flatMap(({ id, country, participants }) => {
+    return [
+      {
+        id: id,
+        country: country,
+        participants: participants
+      }
+    ]
+  })
+
+  var series = []
+  if (mostParticipated?.length) {
+    series = [
+      {
+        name: 'Participants',
+        data: [
+          mostParticipated[0]?.participated,
+          mostParticipated[1]?.participated,
+          mostParticipated[2]?.participated,
+          mostParticipated[3]?.participated,
+          mostParticipated[4]?.participated
+        ]
+      }
+    ]
+  }
+
+  // console.log(newArray)
+
   // ** Hook
   const theme = useTheme()
 
@@ -78,7 +126,13 @@ const AnalyticsSalesCountry = () => {
     xaxis: {
       axisTicks: { show: false },
       axisBorder: { show: false },
-      categories: ['US', 'IN', 'JA', 'CA', 'AU'],
+      categories: [
+        `${newArray[0]?.country}`,
+        `${newArray[1]?.country}`,
+        `${newArray[2]?.country}`,
+        `${newArray[3]?.country}`,
+        `${newArray[4]?.country}`
+      ],
       labels: {
         formatter: val => `${Number(val) / 1000}k`,
         style: {
@@ -103,7 +157,7 @@ const AnalyticsSalesCountry = () => {
     <Card>
       <CardHeader
         title='Participants by Country'
-        subheader='Total of ... Countries'
+        subheader={`Total of ${uniqueCountries.length} Countries`}
         subheaderTypographyProps={{ sx: { lineHeight: 1.429 } }}
         titleTypographyProps={{ sx: { letterSpacing: '0.15px' } }}
         action={

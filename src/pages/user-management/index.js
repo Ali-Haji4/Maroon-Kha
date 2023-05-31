@@ -21,6 +21,7 @@ import FormControl from '@mui/material/FormControl'
 import CardContent from '@mui/material/CardContent'
 import Select from '@mui/material/Select'
 import { Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, TextField } from '@mui/material'
+import { Radio, RadioGroup, FormControlLabel, FormLabel, Tooltip } from '@mui/material'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -58,7 +59,7 @@ import Paper from '@mui/material/Paper'
 export default function UserManagement() {
   const [admins, setAdmins] = React.useState([{}])
   const [toggleEdit, setToggleEdit] = React.useState(false)
-  const [RoleFetched, setRoleFetched] = React.useState([{}])
+  const [RoleFetched, setRoleFetched] = React.useState([])
 
   // const dispatch = useDispatch()
 
@@ -70,16 +71,238 @@ export default function UserManagement() {
   const [pageSize, setPageSize] = useState(10)
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [deleteID, setDeleteID] = React.useState({ id: '' })
+  const [deleteIDSaved, setDeleteIDSaved] = React.useState()
+  const [refresher, setRefresher] = React.useState(false)
 
   //Editing States
   const [editedAdminData, setEditedAdminData] = React.useState([
     { id: '', firstName: '', lastName: '', email: '', password: '', confirmedPassword: '' }
   ])
-  const [editedJudgeData, setEditedJudgeData] = React.useState([{ id: '', firstName: '', lastName: '', email: '' }])
+
+  const [editedJudgeData, setEditedJudgeData] = React.useState([
+    { id: '', firstName: '', lastName: '', email: '', organization: '', job_title: '' }
+  ])
 
   const [editedParticipantData, setEditedParticipantData] = React.useState([
-    { id: '', firstName: '', lastName: '', email: '' }
+    { id: '', firstName: '', lastName: '', email: '', phoneNumber: '', country: '', age: '', gender: '', status: '' }
   ])
+
+  //Validation States
+  const [isFnameValid, setIsFnameValid] = React.useState(false)
+  const [isLnameValid, setIsLnameValid] = React.useState(false)
+  const [isEmailValid, setIsEmailValid] = React.useState(false)
+  const [isPasswordValid, setIsPasswordValid] = React.useState(false)
+  const [isConfirmedPasswordValid, setIsConfirmedPasswordValid] = React.useState(false)
+  const [isPasswordSimilarityValid, setIsPasswordSimilarityValid] = React.useState(false)
+
+  //List of all countries
+  const countries = [
+    'Afghanistan',
+    'Albania',
+    'Algeria',
+    'Andorra',
+    'Angola',
+    'Anguilla',
+    'Antigua &amp; Barbuda',
+    'Argentina',
+    'Armenia',
+    'Aruba',
+    'Australia',
+    'Austria',
+    'Azerbaijan',
+    'Bahamas',
+    'Bahrain',
+    'Bangladesh',
+    'Barbados',
+    'Belarus',
+    'Belgium',
+    'Belize',
+    'Benin',
+    'Bermuda',
+    'Bhutan',
+    'Bolivia',
+    'Bosnia &amp; Herzegovina',
+    'Botswana',
+    'Brazil',
+    'British Virgin Islands',
+    'Brunei',
+    'Bulgaria',
+    'Burkina Faso',
+    'Burundi',
+    'Cambodia',
+    'Cameroon',
+    'Cape Verde',
+    'Cayman Islands',
+    'Chad',
+    'Chile',
+    'China',
+    'Colombia',
+    'Congo',
+    'Cook Islands',
+    'Costa Rica',
+    'Cote D Ivoire',
+    'Croatia',
+    'Cruise Ship',
+    'Cuba',
+    'Cyprus',
+    'Czech Republic',
+    'Denmark',
+    'Djibouti',
+    'Dominica',
+    'Dominican Republic',
+    'Ecuador',
+    'Egypt',
+    'El Salvador',
+    'Equatorial Guinea',
+    'Estonia',
+    'Ethiopia',
+    'Falkland Islands',
+    'Faroe Islands',
+    'Fiji',
+    'Finland',
+    'France',
+    'French Polynesia',
+    'French West Indies',
+    'Gabon',
+    'Gambia',
+    'Georgia',
+    'Germany',
+    'Ghana',
+    'Gibraltar',
+    'Greece',
+    'Greenland',
+    'Grenada',
+    'Guam',
+    'Guatemala',
+    'Guernsey',
+    'Guinea',
+    'Guinea Bissau',
+    'Guyana',
+    'Haiti',
+    'Honduras',
+    'Hong Kong',
+    'Hungary',
+    'Iceland',
+    'India',
+    'Indonesia',
+    'Iran',
+    'Iraq',
+    'Ireland',
+    'Isle of Man',
+    'Israel',
+    'Italy',
+    'Jamaica',
+    'Japan',
+    'Jersey',
+    'Jordan',
+    'Kazakhstan',
+    'Kenya',
+    'Kuwait',
+    'Kyrgyz Republic',
+    'Laos',
+    'Latvia',
+    'Lebanon',
+    'Lesotho',
+    'Liberia',
+    'Libya',
+    'Liechtenstein',
+    'Lithuania',
+    'Luxembourg',
+    'Macau',
+    'Macedonia',
+    'Madagascar',
+    'Malawi',
+    'Malaysia',
+    'Maldives',
+    'Mali',
+    'Malta',
+    'Mauritania',
+    'Mauritius',
+    'Mexico',
+    'Moldova',
+    'Monaco',
+    'Mongolia',
+    'Montenegro',
+    'Montserrat',
+    'Morocco',
+    'Mozambique',
+    'Namibia',
+    'Nepal',
+    'Netherlands',
+    'Netherlands Antilles',
+    'New Caledonia',
+    'New Zealand',
+    'Nicaragua',
+    'Niger',
+    'Nigeria',
+    'Norway',
+    'Oman',
+    'Pakistan',
+    'Palestine',
+    'Panama',
+    'Papua New Guinea',
+    'Paraguay',
+    'Peru',
+    'Philippines',
+    'Poland',
+    'Portugal',
+    'Puerto Rico',
+    'Qatar',
+    'Reunion',
+    'Romania',
+    'Russia',
+    'Rwanda',
+    'Saint Pierre &amp; Miquelon',
+    'Samoa',
+    'San Marino',
+    'Satellite',
+    'Saudi Arabia',
+    'Senegal',
+    'Serbia',
+    'Seychelles',
+    'Sierra Leone',
+    'Singapore',
+    'Slovakia',
+    'Slovenia',
+    'South Africa',
+    'South Korea',
+    'Spain',
+    'Sri Lanka',
+    'St Kitts &amp; Nevis',
+    'St Lucia',
+    'St Vincent',
+    'St. Lucia',
+    'Sudan',
+    'Suriname',
+    'Swaziland',
+    'Sweden',
+    'Switzerland',
+    'Syria',
+    'Taiwan',
+    'Tajikistan',
+    'Tanzania',
+    'Thailand',
+    "Timor L'Este",
+    'Togo',
+    'Tonga',
+    'Trinidad &amp; Tobago',
+    'Tunisia',
+    'Turkey',
+    'Turkmenistan',
+    'Turks &amp; Caicos',
+    'Uganda',
+    'Ukraine',
+    'United Arab Emirates',
+    'United Kingdom',
+    'Uruguay',
+    'Uzbekistan',
+    'Venezuela',
+    'Vietnam',
+    'Virgin Islands (US)',
+    'Yemen',
+    'Zambia',
+    'Zimbabwe'
+  ]
 
   //Links for the PHP files
   const urlJudges = 'http://localhost/reactProject/maroonTest/judgesList.php'
@@ -111,7 +334,7 @@ export default function UserManagement() {
           setRoleFetched(data)
         })
     }
-  }, [role])
+  }, [role, refresher])
 
   const handleFilter = useCallback(val => {
     setValue(val)
@@ -128,6 +351,7 @@ export default function UserManagement() {
   const handleStatusChange = useCallback(e => {
     setStatus(e.target.value)
   }, [])
+  console.log(status)
 
   //Sylized components for the table
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -151,82 +375,218 @@ export default function UserManagement() {
     }
   }))
 
-  function deleteUser(id) {
+  function deleteUser() {
     if (role === 'participant') {
-      console.log('delete ID is ' + id)
-      setDeleteID((deleteID.id = id))
+      setDeleteID({ id: deleteIDSaved })
       console.log(deleteID)
       axios
         .post('http://localhost/reactProject/maroonTest/deleteParticipant.php', deleteID)
         .then(res => console.log(res.data))
-      alert('Participant Deleted Succesfully')
+      setRefresher(prevState => !prevState)
+      handleDeleteClose()
     } else if (role === 'admin') {
-      console.log('delete ID is ' + id)
-      setDeleteID((deleteID.id = id))
+      setDeleteID({ id: deleteIDSaved })
       console.log(deleteID)
       axios
         .post('http://localhost/reactProject/maroonTest/deleteAdmin2.php', deleteID)
         .then(res => console.log(res.data))
-      alert('Admin Deleted Succesfully')
+      setRefresher(prevState => !prevState)
+      handleDeleteClose()
     } else {
-      console.log('delete ID is ' + id)
-      setDeleteID((deleteID.id = id))
+      setDeleteID({ id: deleteIDSaved })
       console.log(deleteID)
       axios
         .post('http://localhost/reactProject/maroonTest/deleteJudge2.php', deleteID)
         .then(res => console.log(res.data))
-      alert('Judge Deleted Succesfully')
+      setRefresher(prevState => !prevState)
+      handleDeleteClose()
     }
   }
 
-  const handleEditAdmin = () => {
+  const handleEdit = () => {
     if (role === 'admin') {
       console.log(editedAdminData)
-      axios
-        .post('http://localhost/reactProject/maroonTest/updateAdmin.php', editedAdminData)
-        .then(res => console.log(res.data))
-      handleEditClose()
+      if (validateEdit(editedAdminData)) {
+        axios
+          .post('http://localhost/reactProject/maroonTest/updateAdmin.php', editedAdminData)
+          .then(res => console.log(res.data))
+        setRefresher(prevState => !prevState)
+        handleEditClose()
+      }
     } else if (role === 'judge') {
-      console.log(editedJudgeData)
-      axios
-        .post('http://localhost/reactProject/maroonTest/updateJudge.php', editedJudgeData)
-        .then(res => console.log(res.data))
-      handleEditClose()
+      if (validateEdit(editedJudgeData)) {
+        console.log(editedJudgeData)
+        axios
+          .post('http://localhost/reactProject/maroonTest/updateJudge.php', editedJudgeData)
+          .then(res => console.log(res.data))
+        setRefresher(prevState => !prevState)
+        handleEditClose()
+      }
     } else {
-      console.log(editedParticipantData)
-      axios
-        .post('http://localhost/reactProject/maroonTest/updateParticipant.php', editedParticipantData)
-        .then(res => console.log(res.data))
-      handleEditClose()
+      if (validateEdit(editedParticipantData)) {
+        console.log(editedParticipantData)
+        axios
+          .post('http://localhost/reactProject/maroonTest/updateParticipant.php', editedParticipantData)
+          .then(res => console.log(res.data))
+        setRefresher(prevState => !prevState)
+        handleEditClose()
+      }
     }
+  }
+
+  const initialStateAdmin = {
+    email: '',
+    password: '',
+    confirmedPassword: '',
+    firstName: '',
+    lastName: ''
+  }
+
+  const initialStateJudge = {
+    email: '',
+    password: '',
+    confirmedPassword: '',
+    firstName: '',
+    lastName: '',
+    organization: '',
+    job_title: ''
+  }
+
+  const initialStateParticipant = {
+    email: '',
+    password: '',
+    confirmedPassword: '',
+    firstName: '',
+    lastName: ''
   }
 
   const handleAdd = () => {
     if (role === 'admin') {
-      console.log(editedAdminData)
-      axios
-        .post('http://localhost/reactProject/maroonTest/insertAdmin.php', editedAdminData)
-        .then(res => console.log(res.data))
-      handleClose()
+      if (validate(editedAdminData)) {
+        console.log(editedAdminData)
+        console.log('Hi')
+        axios
+          .post('http://localhost/reactProject/maroonTest/insertAdmin.php', editedAdminData)
+          .then(res => console.log(res.data))
+        setRefresher(prevState => !prevState)
+        handleClose()
+        setEditedAdminData({ ...initialStateAdmin })
+      }
     } else if (role === 'judge') {
-      console.log(editedJudgeData)
-      axios
-        .post('http://localhost/reactProject/maroonTest/insertJudge.php', editedJudgeData)
-        .then(res => console.log(res.data))
-      handleClose()
+      if (validate(editedJudgeData)) {
+        console.log(editedJudgeData)
+        axios
+          .post('http://localhost/reactProject/maroonTest/insertJudge.php', editedJudgeData)
+          .then(res => console.log(res.data))
+        setRefresher(prevState => !prevState)
+        handleClose()
+        setEditedJudgeData({ ...initialStateJudge })
+      }
     } else {
-      console.log(editedParticipantData)
-      axios
-        .post('http://localhost/reactProject/maroonTest/insertParticipant.php', editedParticipantData)
-        .then(res => console.log(res.data))
-      handleClose()
+      if (validate(editedParticipantData)) {
+        console.log(editedParticipantData)
+        axios
+          .post('http://localhost/reactProject/maroonTest/insertParticipant.php', editedParticipantData)
+          .then(res => console.log(res.data))
+        setRefresher(prevState => !prevState)
+        handleClose()
+        setEditedParticipantData({ ...initialStateParticipant })
+      }
+    }
+  }
+
+  const isUrlValid = url => url.length < 2 || !url.includes('.') || !url.startsWith('http')
+
+  const isNameValid = username => username.length < 2 || !username.includes('.') || username.match(/^[0-9]+$/) != null
+
+  const validate = values => {
+    //Cleanse validation states
+    setIsEmailValid(false)
+    setIsPasswordValid(false)
+    setIsConfirmedPasswordValid(false)
+    setIsFnameValid(false)
+    setIsLnameValid(false)
+    setIsPasswordSimilarityValid(false)
+
+    //Validation
+
+    //Password regex
+    //Minimum eight characters
+    //at least one uppercase letter, one lowercase letter and one number:
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!emailRegex.test(values.email)) {
+      setIsEmailValid(true)
+
+      return false
+    } else if (!passwordRegex.test(values.password)) {
+      setIsPasswordValid(true)
+
+      return false
+    } else if (values.password !== values.confirmedPassword) {
+      setIsConfirmedPasswordValid(true)
+
+      return false
+    } else if (values.firstName == null || values.firstName == '' || /\d/.test(values.firstName) != false) {
+      setIsFnameValid(true)
+
+      return false
+    } else if (values.lastName == null || values.lastName == '' || /\d/.test(values.lastName) != false) {
+      setIsLnameValid(true)
+
+      return false
+    } else {
+      return true
+    }
+  }
+
+  const validateEdit = values => {
+    //Cleanse validation states
+    setIsEmailValid(false)
+
+    setIsFnameValid(false)
+    setIsLnameValid(false)
+
+    //Validation
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (values.firstName == null || values.firstName == '' || /\d/.test(values.firstName) != false) {
+      setIsFnameValid(true)
+
+      return false
+    } else if (values.lastName == null || values.lastName == '' || /\d/.test(values.lastName) != false) {
+      setIsLnameValid(true)
+
+      return false
+    } else if (!emailRegex.test(values.email)) {
+      setIsEmailValid(true)
+
+      return false
+    } else {
+      return true
     }
   }
 
   const [open, setOpen] = React.useState(false)
   const [openEdit, setOpenEdit] = React.useState(false)
+  const [openDelete, setOpenDelete] = React.useState(false)
 
   const handleClickOpen = () => {
+    //Restore Admin data to initial state
+    setEditedAdminData({ ...initialStateAdmin })
+    setEditedJudgeData({ ...initialStateJudge })
+    setEditedParticipantData({ ...initialStateParticipant })
+    console.log(editedAdminData)
+
+    //Cleanse validation states
+    setIsEmailValid(false)
+    setIsPasswordValid(false)
+    setIsConfirmedPasswordValid(false)
+    setIsFnameValid(false)
+    setIsLnameValid(false)
+    setIsPasswordSimilarityValid(false)
     setOpen(true)
   }
 
@@ -235,11 +595,23 @@ export default function UserManagement() {
   }
 
   const handleClickEditOpen = () => {
+    //Cleanse validation states
+    setIsEmailValid(false)
+    setIsFnameValid(false)
+    setIsLnameValid(false)
     setOpenEdit(true)
   }
 
   const handleEditClose = () => {
     setOpenEdit(false)
+  }
+
+  const handleClickDeleteOpen = () => {
+    setOpenDelete(true)
+  }
+
+  const handleDeleteClose = () => {
+    setOpenDelete(false)
   }
 
   function handleDataChange(event) {
@@ -263,6 +635,14 @@ export default function UserManagement() {
       console.log(editedParticipantData)
     }
   }
+
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const handleSearchChange = event => {
+    setSearchTerm(event.target.value)
+  }
+
+  const filteredUsers = RoleFetched.filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   return (
     <Grid container spacing={6}>
@@ -306,68 +686,149 @@ export default function UserManagement() {
                         inputProps={{ placeholder: 'Select Status' }}
                       >
                         <MenuItem value=''>Select Status</MenuItem>
-                        <MenuItem value='pending'>Pending</MenuItem>
-                        <MenuItem value='active'>Active</MenuItem>
-                        <MenuItem value='inactive'>Inactive</MenuItem>
+                        <MenuItem value='In Progress'>In Progress</MenuItem>
+                        <MenuItem value='Completed'>Completed</MenuItem>
+                        <MenuItem value='Inactive'>Inactive</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
                   <TableContainer component={Paper}>
                     <Divider />
-                    <TableHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
+                    <TableHeader value={searchTerm} handleFilter={handleSearchChange} toggle={handleClickOpen} />
                     <Table sx={{ minWidth: 700 }} aria-label='customized table'>
                       <TableHead>
                         <TableRow>
                           <StyledTableCell>User ID</StyledTableCell>
                           <StyledTableCell>Name</StyledTableCell>
                           <StyledTableCell>Email</StyledTableCell>
+                          <StyledTableCell>Phone Number</StyledTableCell>
+                          <StyledTableCell>Country</StyledTableCell>
+                          <StyledTableCell>Age</StyledTableCell>
+                          <StyledTableCell>Gender</StyledTableCell>
                           <StyledTableCell>Status</StyledTableCell>
                           <StyledTableCell>Action</StyledTableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {RoleFetched?.map((item, index) => (
-                          <StyledTableRow key={index}>
-                            <StyledTableCell component='th' scope='row'>
-                              {item.id}
-                            </StyledTableCell>
-                            <StyledTableCell>{item.name}</StyledTableCell>
-                            <StyledTableCell>{item.email}</StyledTableCell>
-                            <StyledTableCell>{item.status}</StyledTableCell>
-                            <StyledTableCell>
-                              <Stack direction='row' spacing={2}>
-                                <Button
-                                  variant='contained'
-                                  type='button'
-                                  className='reportBtn'
-                                  onClick={event => {
-                                    event.preventDefault()
-                                    handleClickEditOpen()
-                                    setEditedAdminData({
-                                      ...editedAdminData,
-                                      id: item.id,
-                                      firstName: item.first_name,
-                                      lastName: item.last_name,
-                                      email: item.email
-                                    })
-                                  }}
-                                >
-                                  Edit
-                                </Button>
-                                {/* <Button variant='outlined' type='submit' className='reportBtn'>
-                                        Delete{' '}
-                                      </Button> */}
-                                <IconButton
-                                  size='small'
-                                  onClick={() => deleteUser(item.id)}
-                                  sx={{ color: 'text.primary' }}
-                                >
-                                  <Icon icon='mdi:delete' fontSize={20} />
-                                </IconButton>
-                              </Stack>
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        ))}
+                        {filteredUsers?.map((item, index) =>
+                          status === '' ? (
+                            <StyledTableRow key={index}>
+                              <StyledTableCell component='th' scope='row'>
+                                {item.id}
+                              </StyledTableCell>
+                              <StyledTableCell>{item.name}</StyledTableCell>
+                              <StyledTableCell>{item.email}</StyledTableCell>
+                              <StyledTableCell>{item.phone_number}</StyledTableCell>
+                              <StyledTableCell>{item.country}</StyledTableCell>
+                              <StyledTableCell>{item.age}</StyledTableCell>
+                              <StyledTableCell>{item.gender}</StyledTableCell>
+                              <StyledTableCell>{item.status}</StyledTableCell>
+                              <StyledTableCell>
+                                <Stack direction='row' spacing={2}>
+                                  <Button
+                                    variant='contained'
+                                    type='button'
+                                    className='reportBtn'
+                                    onClick={event => {
+                                      event.preventDefault()
+                                      handleClickEditOpen()
+                                      setEditedParticipantData({
+                                        ...editedParticipantData,
+                                        id: item.id,
+                                        firstName: item.first_name,
+                                        lastName: item.last_name,
+                                        email: item.email,
+                                        phoneNumber: item.phone_number,
+                                        country: item.country,
+                                        age: item.age,
+                                        gender: item.gender,
+                                        status: item.status
+                                      })
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+
+                                  <IconButton
+                                    size='small'
+                                    onClick={e => {
+                                      e.preventDefault()
+                                      handleClickDeleteOpen()
+                                      setDeleteIDSaved(item.id)
+                                      setDeleteID({ id: item.id })
+                                      setEditedParticipantData(prevState => ({
+                                        ...prevState,
+                                        id: item.id
+                                      }))
+                                    }}
+                                    sx={{ color: 'text.primary' }}
+                                  >
+                                    <Icon icon='mdi:delete' fontSize={20} />
+                                  </IconButton>
+                                </Stack>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) : (
+                            status === item.status && (
+                              <StyledTableRow key={index}>
+                                <StyledTableCell component='th' scope='row'>
+                                  {item.id}
+                                </StyledTableCell>
+                                <StyledTableCell>{item.name}</StyledTableCell>
+                                <StyledTableCell>{item.email}</StyledTableCell>
+                                <StyledTableCell>{item.phone_number}</StyledTableCell>
+                                <StyledTableCell>{item.country}</StyledTableCell>
+                                <StyledTableCell>{item.age}</StyledTableCell>
+                                <StyledTableCell>{item.gender}</StyledTableCell>
+                                <StyledTableCell>{item.status}</StyledTableCell>
+                                <StyledTableCell>
+                                  <Stack direction='row' spacing={2}>
+                                    <Button
+                                      variant='contained'
+                                      type='button'
+                                      className='reportBtn'
+                                      onClick={event => {
+                                        event.preventDefault()
+                                        handleClickEditOpen()
+                                        setEditedParticipantData({
+                                          ...editedParticipantData,
+                                          id: item.id,
+                                          firstName: item.first_name,
+                                          lastName: item.last_name,
+                                          email: item.email,
+                                          phoneNumber: item.phone_number,
+                                          country: item.country,
+                                          age: item.age,
+                                          gender: item.gender,
+                                          status: item.status
+                                        })
+                                      }}
+                                    >
+                                      Edit
+                                    </Button>
+
+                                    <IconButton
+                                      size='small'
+                                      onClick={e => {
+                                        e.preventDefault()
+                                        handleClickDeleteOpen()
+                                        setDeleteIDSaved(item.id)
+                                        setDeleteID({ id: item.id })
+                                        setEditedParticipantData(prevState => ({
+                                          ...prevState,
+                                          id: item.id
+                                        }))
+                                      }}
+                                      sx={{ color: 'text.primary' }}
+                                    >
+                                      <Icon icon='mdi:delete' fontSize={20} />
+                                    </IconButton>
+                                  </Stack>
+                                </StyledTableCell>
+                              </StyledTableRow>
+                            )
+                          )
+                        )}
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -377,7 +838,7 @@ export default function UserManagement() {
               {role === 'admin' && (
                 <TableContainer component={Paper}>
                   <Divider />
-                  <TableHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
+                  <TableHeader value={searchTerm} handleFilter={handleSearchChange} toggle={handleClickOpen} />
                   <Table sx={{ minWidth: 700 }} aria-label='customized table'>
                     <TableHead>
                       <TableRow>
@@ -388,7 +849,7 @@ export default function UserManagement() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {RoleFetched?.map((item, index) => (
+                      {filteredUsers?.map((item, index) => (
                         <StyledTableRow key={index}>
                           <StyledTableCell component='th' scope='row'>
                             {item.id}
@@ -415,12 +876,19 @@ export default function UserManagement() {
                               >
                                 Edit
                               </Button>
-                              {/* <Button variant='outlined' type='submit' className='reportBtn'>
-                                        Delete{' '}
-                                      </Button> */}
+
                               <IconButton
                                 size='small'
-                                onClick={() => deleteUser(item.id)}
+                                onClick={e => {
+                                  e.preventDefault()
+                                  handleClickDeleteOpen()
+                                  setDeleteIDSaved(item.id)
+                                  setDeleteID({ id: item.id })
+                                  setEditedAdminData(prevState => ({
+                                    ...prevState,
+                                    id: item.id
+                                  }))
+                                }}
                                 sx={{ color: 'text.primary' }}
                               >
                                 <Icon icon='mdi:delete' fontSize={20} />
@@ -437,26 +905,30 @@ export default function UserManagement() {
               {role === 'judge' && (
                 <TableContainer component={Paper}>
                   <Divider />
-                  <TableHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
+                  <TableHeader value={searchTerm} handleFilter={handleSearchChange} toggle={handleClickOpen} />
                   <Table sx={{ minWidth: 700 }} aria-label='customized table'>
                     <TableHead>
                       <TableRow>
                         <StyledTableCell>User ID</StyledTableCell>
                         <StyledTableCell>Name</StyledTableCell>
                         <StyledTableCell>Email</StyledTableCell>
-                        <StyledTableCell>Panel</StyledTableCell>
+                        <StyledTableCell>Organization</StyledTableCell>
+                        <StyledTableCell>Job Title</StyledTableCell>
+                        <StyledTableCell>Panel ID</StyledTableCell>
                         <StyledTableCell>Section ID</StyledTableCell>
                         <StyledTableCell>Action</StyledTableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {RoleFetched?.map((item, index) => (
+                      {filteredUsers?.map((item, index) => (
                         <StyledTableRow key={index}>
                           <StyledTableCell component='th' scope='row'>
                             {item.id}
                           </StyledTableCell>
                           <StyledTableCell>{item.name}</StyledTableCell>
                           <StyledTableCell>{item.email}</StyledTableCell>
+                          <StyledTableCell>{item.organization}</StyledTableCell>
+                          <StyledTableCell>{item.job_title}</StyledTableCell>
                           <StyledTableCell>{item.panel_id}</StyledTableCell>
                           <StyledTableCell>{item.sectionID}</StyledTableCell>
                           <StyledTableCell>
@@ -473,18 +945,27 @@ export default function UserManagement() {
                                     id: item.id,
                                     firstName: item.first_name,
                                     lastName: item.last_name,
-                                    email: item.email
+                                    email: item.email,
+                                    organization: item.organization,
+                                    job_title: item.job_title
                                   })
                                 }}
                               >
                                 Edit
                               </Button>
-                              {/* <Button variant='outlined' type='submit' className='reportBtn'>
-                                        Delete{' '}
-                                      </Button> */}
+
                               <IconButton
                                 size='small'
-                                onClick={() => deleteUser(item.id)}
+                                onClick={e => {
+                                  e.preventDefault()
+                                  handleClickDeleteOpen()
+                                  setDeleteIDSaved(item.id)
+                                  setDeleteID({ id: item.id })
+                                  setEditedJudgeData(prevState => ({
+                                    ...prevState,
+                                    id: item.id
+                                  }))
+                                }}
                                 sx={{ color: 'text.primary' }}
                               >
                                 <Icon icon='mdi:delete' fontSize={20} />
@@ -506,7 +987,7 @@ export default function UserManagement() {
 
       {/* Dialog for Add User and Edit User */}
 
-      {/* Adding Admin Dialog */}
+      {/* Adding Admin and Judge Dialog */}
       <Dialog fullWidth maxWidth='md' onClose={handleClose} aria-labelledby='customized-dialog-title' open={open}>
         <DialogTitle id='customized-dialog-title' onClose={handleClose}>
           Adding a new {role}
@@ -521,17 +1002,26 @@ export default function UserManagement() {
             variant='standard'
             name='email'
             onChange={handleDataChange}
+            error={isEmailValid}
+            helperText={isEmailValid && 'Invalid Email Address'}
+            required
           />
-          <TextField
-            margin='dense'
-            id='outlined-password-input'
-            label='Password'
-            type='password'
-            fullWidth
-            variant='standard'
-            name='password'
-            onChange={handleDataChange}
-          />
+          <Tooltip title='Password must be Minimum eight characters, at least one uppercase letter, one lowercase letter and one number:'>
+            <TextField
+              margin='dense'
+              id='outlined-password-input'
+              label='Password'
+              type='password'
+              fullWidth
+              variant='standard'
+              name='password'
+              onChange={handleDataChange}
+              error={isPasswordValid}
+              helperText={isPasswordValid && 'Invalid Password'}
+              required
+            />
+          </Tooltip>
+
           <TextField
             margin='dense'
             id='outlined-confirm-password-input'
@@ -541,6 +1031,9 @@ export default function UserManagement() {
             variant='standard'
             name='confirmedPassword'
             onChange={handleDataChange}
+            error={isConfirmedPasswordValid}
+            helperText={isConfirmedPasswordValid && 'Password Does Not Match'}
+            required
           />
           <TextField
             margin='dense'
@@ -551,6 +1044,9 @@ export default function UserManagement() {
             variant='standard'
             name='firstName'
             onChange={handleDataChange}
+            error={isFnameValid}
+            helperText={isFnameValid && 'Invalid First Name'}
+            required
           />
           <TextField
             margin='dense'
@@ -561,7 +1057,154 @@ export default function UserManagement() {
             variant='standard'
             name='lastName'
             onChange={handleDataChange}
+            error={isLnameValid}
+            helperText={isLnameValid && 'Invalid Last Name'}
+            required
           />
+          {role === 'judge' && (
+            <>
+              <TextField
+                margin='dense'
+                id='outlined-multiline-flexible-org'
+                label='Organization'
+                type='text'
+                fullWidth
+                variant='standard'
+                name='organization'
+                onChange={handleDataChange}
+              />
+              <TextField
+                margin='dense'
+                id='outlined-multiline-flexible-job'
+                label='Job Title'
+                type='text'
+                fullWidth
+                variant='standard'
+                name='job_title'
+                onChange={handleDataChange}
+              />
+            </>
+          )}
+          {role === 'participant' && (
+            <>
+              <TextField
+                sx={{ mb: 6 }}
+                margin='dense'
+                id='outlined-multiline-flexible-phoneNumber'
+                label='Phone Number'
+                type='number'
+                fullWidth
+                variant='standard'
+                name='phoneNumber'
+                onChange={handleDataChange}
+              />
+              <FormControl variant='standard' sx={{ minWidth: 120 }}>
+                <InputLabel id='demo-simple-select-label'>Country</InputLabel>
+                <Select
+                  labelId='demo-simple-select-label'
+                  id='demo-simple-select'
+                  defaultValue={editedParticipantData.country}
+                  label='Country'
+                  onChange={handleDataChange}
+                  name='country'
+                >
+                  {countries.map((country, index) => (
+                    <MenuItem key={index} value={country}>
+                      {country}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Divider></Divider>
+              <FormLabel id='demo-row-radio-buttons-group-label'>Age Group</FormLabel>
+              <RadioGroup row aria-labelledby='demo-row-radio-buttons-group-label'>
+                <FormControlLabel
+                  value='16-20'
+                  control={<Radio />}
+                  label='16-20'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='21-25'
+                  control={<Radio />}
+                  label='21-25'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='26-30'
+                  control={<Radio />}
+                  label='26-30'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='31-35'
+                  control={<Radio />}
+                  label='31-35'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='36-40'
+                  control={<Radio />}
+                  label='36-40'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='41-45'
+                  control={<Radio />}
+                  label='41-45'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel value='46+' control={<Radio />} label='46+' onChange={handleDataChange} name='age' />
+              </RadioGroup>
+              <FormLabel id='demo-row-radio-buttons-group-label'>Gender</FormLabel>
+              <RadioGroup row aria-labelledby='demo-row-radio-buttons-group-label'>
+                <FormControlLabel
+                  value='Male'
+                  control={<Radio />}
+                  label='Male'
+                  onChange={handleDataChange}
+                  name='gender'
+                />
+                <FormControlLabel
+                  value='Female'
+                  control={<Radio />}
+                  label='Female'
+                  onChange={handleDataChange}
+                  name='gender'
+                />
+              </RadioGroup>
+              <FormLabel id='demo-row-radio-buttons-group-label'>Status</FormLabel>
+              <RadioGroup row aria-labelledby='demo-row-radio-buttons-group-label'>
+                <FormControlLabel
+                  value='Inactive'
+                  control={<Radio />}
+                  label='Inactive'
+                  onChange={handleDataChange}
+                  name='status'
+                />
+                <FormControlLabel
+                  value='In Progress'
+                  control={<Radio />}
+                  label='In Progress'
+                  onChange={handleDataChange}
+                  name='status'
+                />
+                <FormControlLabel
+                  value='Completed'
+                  control={<Radio />}
+                  label='Completed'
+                  onChange={handleDataChange}
+                  name='status'
+                />
+              </RadioGroup>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button variant='contained' onClick={handleAdd}>
@@ -574,7 +1217,7 @@ export default function UserManagement() {
         </DialogActions>
       </Dialog>
 
-      {/* Editing Admin Dialog */}
+      {/* Editing Dialog */}
       <Dialog
         fullWidth
         maxWidth='md'
@@ -583,7 +1226,8 @@ export default function UserManagement() {
         open={openEdit}
       >
         <DialogTitle id='customized-dialog-title' onClose={handleEditClose}>
-          Editing {role} Information | ID {role === 'admin' ? editedAdminData.id : editedJudgeData.id}
+          Editing {role} Information | ID{' '}
+          {role === 'admin' ? editedAdminData.id : role === 'judge' ? editedJudgeData.id : editedParticipantData.id}
         </DialogTitle>
         <DialogContent>
           <TextField
@@ -593,10 +1237,18 @@ export default function UserManagement() {
             type='text'
             fullWidth
             variant='standard'
-            multiline
             name='firstName'
-            defaultValue={role === 'admin' ? editedAdminData.firstName : editedJudgeData.firstName}
+            defaultValue={
+              role === 'admin'
+                ? editedAdminData.firstName
+                : role === 'judge'
+                ? editedJudgeData.firstName
+                : editedParticipantData.firstName
+            }
             onChange={handleDataChange}
+            error={isFnameValid}
+            helperText={isFnameValid && 'Invalid First Name'}
+            required
           />
           <TextField
             margin='dense'
@@ -605,10 +1257,18 @@ export default function UserManagement() {
             type='text'
             fullWidth
             variant='standard'
-            multiline
             name='lastName'
-            defaultValue={role === 'admin' ? editedAdminData.lastName : editedJudgeData.lastName}
+            defaultValue={
+              role === 'admin'
+                ? editedAdminData.lastName
+                : role === 'judge'
+                ? editedJudgeData.lastName
+                : editedParticipantData.lastName
+            }
             onChange={handleDataChange}
+            error={isLnameValid}
+            helperText={isLnameValid && 'Invalid Last Name'}
+            required
           />
           <TextField
             margin='dense'
@@ -617,19 +1277,211 @@ export default function UserManagement() {
             type='email'
             fullWidth
             variant='standard'
-            multiline
             name='email'
-            defaultValue={role === 'admin' ? editedAdminData.email : editedJudgeData.email}
+            defaultValue={
+              role === 'admin'
+                ? editedAdminData.email
+                : role === 'judge'
+                ? editedJudgeData.email
+                : editedParticipantData.email
+            }
             onChange={handleDataChange}
+            error={isEmailValid}
+            helperText={isEmailValid && 'Invalid Email Address'}
+            required
           />
+
+          {role === 'judge' && (
+            <>
+              <TextField
+                margin='dense'
+                id='outlined-multiline-flexible-orgEdit'
+                label='Organization'
+                type='text'
+                fullWidth
+                variant='standard'
+                name='organization'
+                onChange={handleDataChange}
+                defaultValue={editedJudgeData.organization}
+              />
+              <TextField
+                margin='dense'
+                id='outlined-multiline-flexible-jobEdit'
+                label='Job Title'
+                type='text'
+                fullWidth
+                variant='standard'
+                name='job_title'
+                onChange={handleDataChange}
+                defaultValue={editedJudgeData.job_title}
+              />
+            </>
+          )}
+          {role === 'participant' && (
+            <>
+              <TextField
+                sx={{ mb: 6 }}
+                margin='dense'
+                id='outlined-multiline-flexible-phoneNumber'
+                label='Phone Number'
+                type='number'
+                fullWidth
+                variant='standard'
+                name='phoneNumber'
+                defaultValue={editedParticipantData.phoneNumber}
+                onChange={handleDataChange}
+              />
+              <FormControl variant='standard' sx={{ minWidth: 120 }}>
+                <InputLabel id='demo-simple-select-label'>Country</InputLabel>
+                <Select
+                  labelId='demo-simple-select-label'
+                  id='demo-simple-select'
+                  defaultValue={editedParticipantData.country}
+                  label='Country'
+                  onChange={handleDataChange}
+                  name='country'
+                >
+                  {countries.map((country, index) => (
+                    <MenuItem key={index} value={country}>
+                      {country}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Divider></Divider>
+              <FormLabel id='demo-row-radio-buttons-group-label'>Age Group</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby='demo-row-radio-buttons-group-label'
+                defaultValue={editedParticipantData.age}
+              >
+                <FormControlLabel
+                  value='16-20'
+                  control={<Radio />}
+                  label='16-20'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='21-25'
+                  control={<Radio />}
+                  label='21-25'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='26-30'
+                  control={<Radio />}
+                  label='26-30'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='31-35'
+                  control={<Radio />}
+                  label='31-35'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='36-40'
+                  control={<Radio />}
+                  label='36-40'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel
+                  value='41-45'
+                  control={<Radio />}
+                  label='41-45'
+                  onChange={handleDataChange}
+                  name='age'
+                />
+                <FormControlLabel value='46+' control={<Radio />} label='46+' onChange={handleDataChange} name='age' />
+              </RadioGroup>
+              <FormLabel id='demo-row-radio-buttons-group-label'>Gender</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby='demo-row-radio-buttons-group-label'
+                defaultValue={editedParticipantData.gender}
+              >
+                <FormControlLabel
+                  value='Male'
+                  control={<Radio />}
+                  label='Male'
+                  onChange={handleDataChange}
+                  name='gender'
+                />
+                <FormControlLabel
+                  value='Female'
+                  control={<Radio />}
+                  label='Female'
+                  onChange={handleDataChange}
+                  name='gender'
+                />
+              </RadioGroup>
+
+              <FormLabel id='demo-row-radio-buttons-group-label'>Status</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby='demo-row-radio-buttons-group-label'
+                defaultValue={editedParticipantData.status}
+              >
+                <FormControlLabel
+                  value='Inactive'
+                  control={<Radio />}
+                  label='Inactive'
+                  onChange={handleDataChange}
+                  name='status'
+                />
+                <FormControlLabel
+                  value='In Progress'
+                  control={<Radio />}
+                  label='In Progress'
+                  onChange={handleDataChange}
+                  name='status'
+                />
+                <FormControlLabel
+                  value='Completed'
+                  control={<Radio />}
+                  label='Completed'
+                  onChange={handleDataChange}
+                  name='status'
+                />
+              </RadioGroup>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button variant='contained' onClick={handleEditAdmin}>
+          <Button variant='contained' onClick={handleEdit}>
             Submit
           </Button>
 
           <Button onClick={handleEditClose} variant='outlined'>
             Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DELETE CONFIRMATION DIALOGUE */}
+      <Dialog
+        open={openDelete}
+        onClose={handleDeleteClose}
+        aria-labelledby='alert-dialog-title'
+        aria-describedby='alert-dialog-description'
+      >
+        <DialogTitle id='alert-dialog-title'>{`Delete ${role} ID ${
+          role === 'admin' ? editedAdminData.id : role === 'judge' ? editedJudgeData.id : editedParticipantData.id
+        } `}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id='alert-dialog-description'>
+            Are you sure you want to delete this {role}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose}>Disagree</Button>
+          <Button onClick={deleteUser} autoFocus>
+            Agree
           </Button>
         </DialogActions>
       </Dialog>

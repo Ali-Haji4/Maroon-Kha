@@ -18,14 +18,10 @@ import IconButton from '@mui/material/IconButton'
 import Avatar from '@mui/material/Avatar'
 import AvatarGroup from '@mui/material/AvatarGroup'
 import Link from '@mui/material/Link'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
+
 import TableContainer from '@mui/material/TableContainer'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import DialogTitle from '@mui/material/DialogTitle'
-import Dialog from '@mui/material/Dialog'
 import FormControl from '@mui/material/FormControl'
-import TextField from '@mui/material/TextField'
 import Table from '@mui/material/Table'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
@@ -33,6 +29,7 @@ import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
 import Tooltip from '@mui/material/Tooltip'
 import Checkbox from '@mui/material/Checkbox'
+import { Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, TextField } from '@mui/material'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -67,8 +64,9 @@ const ACLPage = () => {
 
   const urlPanels = 'http://localhost/reactProject/maroonTest/panelList.php'
   const urlJudge = 'http://localhost/reactProject/maroonTest/judgesList.php'
-  const [panel, setPanel] = React.useState([{}])
-  const [judge, setJudge] = React.useState([{}])
+  const [panel, setPanel] = React.useState([])
+  const [judge, setJudge] = React.useState([])
+  const [refresh, setRefresher] = React.useState(false)
   const avatars = ['1.png', '2.png', '3.png', '4.png']
   useEffect(() => {
     axios
@@ -77,24 +75,24 @@ const ACLPage = () => {
       .then(data => {
         setPanel(data)
       })
+
     axios
       .get(urlJudge)
       .then(response => response.data)
       .then(data => {
         setJudge(data)
       })
-  }, [panel])
+    console.log(panel)
+  }, [refresh])
 
-  function deletePanel(id) {
-    //This deletes the whole panel
-    console.log('delete ID is ' + id)
-    setDeleteID((deleteID.id = id))
+  function deletePanel() {
+    // //This deletes the whole panel
+    // console.log('delete ID is ' + id)
+    // setDeleteID((deleteID.id = id))
     console.log(deleteID)
     axios.post('http://localhost/reactProject/maroonTest/deletePanel.php', deleteID).then(res => console.log(res.data))
-
-    //This removes the panel id from all the judges that were assigned to the deleted panel
-    alert('Panel Deleted Succesfully')
-    window.location.reload(true)
+    setRefresher(prevState => !prevState)
+    handleDeleteClose()
   }
 
   const handleClose = () => {
@@ -114,6 +112,7 @@ const ACLPage = () => {
         .then(res => console.log(res.data))
 
       console.log('Title:' + dialogTitle)
+      setRefresher(prevState => !prevState)
     } else if (dialogTitle === 'Edit') {
       console.log('Beginning submission')
 
@@ -127,6 +126,7 @@ const ACLPage = () => {
         .then(res => console.log(res.data))
       console.log('Current panel ID:' + currentPanelID + ' Title:' + dialogTitle + ' Checkbox ' + submittedCheckbox.id)
       console.log()
+      setRefresher(prevState => !prevState)
     } else {
       console.log('ERROR 404')
     }
@@ -168,6 +168,16 @@ const ACLPage = () => {
     }
   }, [selectedCheckbox])
 
+  const [openDelete, setOpenDelete] = React.useState(false)
+
+  const handleClickDeleteOpen = () => {
+    setOpenDelete(true)
+  }
+
+  const handleDeleteClose = () => {
+    setOpenDelete(false)
+  }
+
   return (
     <Grid container spacing={6}>
       <Grid item md={6} xs={12}>
@@ -199,111 +209,102 @@ const ACLPage = () => {
         </Grid>
       ) : null}
       <Grid item xs={12}>
-        <Card>
-          <CardHeader title='Youth Award Panels' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
-          <Divider></Divider>
-          <Grid container spacing={6} className='match-height' sx={{ mt: '2px' }}>
-            {panel?.map((item, index) => (
-              <Grid item xs={12} sm={6} lg={4} key={index}>
-                <Card>
-                  <CardContent>
-                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2'>Panel {index + 1}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant='h6'>{item.title}</Typography>
-                        {judge?.map(
-                          items =>
-                            items.panel_id === item.id && (
-                              <>
-                                <Typography variant='h6' key={index} sx={{ mb: 3 }}>
-                                  {items.name}
-                                </Typography>
-                              </>
-                            )
-                        )}
-                        <Typography
-                          href='/'
-                          variant='body2'
-                          component={Link}
-                          sx={{ color: 'primary.main' }}
-                          onClick={e => {
-                            e.preventDefault()
-                            handleClickOpen()
-                            setDialogTitle('Edit')
-                            setSubmittedCheckbox(existingValues => ({
-                              ...existingValues,
-                              panel_id: item.id,
-                              id: selectedCheckbox
-                            }))
-                          }}
-                        >
-                          Edit Panel
-                        </Typography>
-                      </Box>
-
-                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <IconButton size='small' onClick={() => deletePanel(item.id)} sx={{ color: 'text.primary' }}>
-                          <Icon icon='mdi:delete' fontSize={20} />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-            <Grid item xs={12} sm={6} lg={4}>
+        <CardHeader title='Youth Award Panels' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+        <Divider></Divider>
+        <Grid container spacing={6} className='match-height' sx={{ mt: '2px' }}>
+          {panel?.map((item, index) => (
+            <Grid item xs={12} sm={6} lg={4} key={index}>
               <Card>
-                <Grid container sx={{ height: '100%' }}>
-                  <Grid item xs={5}>
-                    <Box sx={{ height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                      <img width={65} height={130} alt='add-role' src='/images/pages/add-new-role-illustration.png' />
+                <CardContent>
+                  <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant='body2'>
+                      Panel {index + 1} | ID {item.id}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <Typography variant='h6'>{item.title}</Typography>
+                      {judge?.map(
+                        items =>
+                          items.panel_id === item.id && (
+                            <>
+                              <Typography variant='h6' key={index} sx={{ mb: 3 }}>
+                                {items.name}
+                              </Typography>
+                            </>
+                          )
+                      )}
+                      <Typography
+                        href='/'
+                        variant='body2'
+                        component={Link}
+                        sx={{ color: 'primary.main' }}
+                        onClick={e => {
+                          e.preventDefault()
+                          handleClickOpen()
+                          setDialogTitle('Edit')
+                          setSubmittedCheckbox(existingValues => ({
+                            ...existingValues,
+                            panel_id: item.id,
+                            id: selectedCheckbox
+                          }))
+                        }}
+                      >
+                        Edit Panel
+                      </Typography>
                     </Box>
-                  </Grid>
-                  <Grid item xs={7}>
-                    <CardContent>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Button
-                          variant='contained'
-                          sx={{ mb: 2.5, whiteSpace: 'nowrap' }}
-                          onClick={() => {
-                            handleClickOpen()
-                            setDialogTitle('Add')
-                            setSubmittedCheckbox(existingValues => ({
-                              ...existingValues,
-                              id: selectedCheckbox
-                            }))
-                          }}
-                        >
-                          Add Panel
-                        </Button>
-                        <Typography variant='body2'>Add Panel, if it doesn't exist.</Typography>
-                      </Box>
-                    </CardContent>
-                  </Grid>
-                </Grid>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <IconButton
+                        size='small'
+                        onClick={event => {
+                          event.preventDefault()
+                          setDeleteID({ id: item.id })
+                          handleClickDeleteOpen()
+                        }}
+                        sx={{ color: 'text.primary' }}
+                      >
+                        <Icon icon='mdi:delete' fontSize={20} />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </CardContent>
               </Card>
             </Grid>
+          ))}
+          <Grid item xs={12} sm={6} lg={4}>
+            <Card>
+              <Grid container sx={{ height: '100%' }}>
+                <Grid item xs={5}>
+                  <Box sx={{ height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                    <img width={65} height={130} alt='add-role' src='/images/pages/add-new-role-illustration.png' />
+                  </Box>
+                </Grid>
+                <Grid item xs={7}>
+                  <CardContent>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Button
+                        variant='contained'
+                        sx={{ mb: 2.5, whiteSpace: 'nowrap' }}
+                        onClick={() => {
+                          handleClickOpen()
+                          setDialogTitle('Add')
+                          setSubmittedCheckbox(existingValues => ({
+                            ...existingValues,
+                            id: selectedCheckbox
+                          }))
+                        }}
+                      >
+                        Add Panel
+                      </Button>
+                      <Typography variant='body2'>Add Panel, if it doesn't exist.</Typography>
+                    </Box>
+                  </CardContent>
+                </Grid>
+              </Grid>
+            </Card>
           </Grid>
-          <CardHeader
-            title='Panel Management (Youth Award)'
-            sx={{ mt: 10, pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }}
-          />
-          <Divider></Divider>
-          <Button
-            variant='contained'
-            type='button'
-            sx={{ ml: '20px', mt: '30px', mb: '30px' }}
-            onClick={handleClickOpen}
-          >
-            Create Panel
-          </Button>
-
-          <h4> {submittedCheckbox.id}</h4>
-          <h4> {selectedCheckbox}</h4>
-          <h4>Current Panel_id: {submittedCheckbox.panel_id}</h4>
-        </Card>
+        </Grid>
       </Grid>
       {/* THIS IS THE CREATE section */}
       <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={open}>
@@ -370,7 +371,7 @@ const ACLPage = () => {
                           color: theme => `${theme.palette.text.primary} !important`
                         }}
                       >
-                        {i.name}
+                        {i.name} | {i.panel_id === '0' ? 'Not Assigned' : i.panel_id}
                       </TableCell>
                       <TableCell>
                         <FormControlLabel
@@ -401,6 +402,25 @@ const ACLPage = () => {
               Cancel
             </Button>
           </Box>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openDelete}
+        onClose={handleDeleteClose}
+        aria-labelledby='alert-dialog-title'
+        aria-describedby='alert-dialog-description'
+      >
+        <DialogTitle id='alert-dialog-title'>Delete Panel ID | {deleteID.id}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id='alert-dialog-description'>
+            Are you sure you want to delete this panel?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose}>Disagree</Button>
+          <Button onClick={deletePanel} autoFocus>
+            Agree
+          </Button>
         </DialogActions>
       </Dialog>
     </Grid>

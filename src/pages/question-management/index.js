@@ -60,7 +60,7 @@ import { Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, T
 export default function QuestionManagement() {
   const [admins, setAdmins] = React.useState([{}])
   const [toggleEdit, setToggleEdit] = React.useState(false)
-  const [questions, setQuestions] = React.useState([{}])
+  const [questions, setQuestions] = React.useState([])
   const [questions2, setQuestions2] = React.useState([{}])
 
   //Axios function to retrieve admins from database and insert them into the admins
@@ -77,6 +77,7 @@ export default function QuestionManagement() {
   const [pageSize, setPageSize] = useState(10)
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [deleteID, setDeleteID] = React.useState({ id: '' })
+  const [deleteIDSaved, setDeleteIDSaved] = React.useState()
   const [questionText, setQuestionText] = React.useState({ questionText: '' })
   const [editedQuestionText, setEditedQuestionText] = React.useState({ questionText: '', id: '' })
 
@@ -129,11 +130,8 @@ export default function QuestionManagement() {
     }
   }))
 
-  function deleteQuestion(id) {
+  function deleteQuestion() {
     if (competition === 'youth') {
-      console.log('delete ID is ' + id)
-
-      setDeleteID((deleteID.id = id))
       console.log(deleteID + '<- ID')
       axios
         .post('http://localhost/reactProject/maroonTest/deleteQuestion2.php', deleteID)
@@ -146,6 +144,7 @@ export default function QuestionManagement() {
       //     </Alert>
       //   </Snackbar>
       // )
+      handleDeleteClose()
     } else {
       console.log('delete ID is ' + id)
       setDeleteID((deleteID.id = id))
@@ -153,7 +152,7 @@ export default function QuestionManagement() {
       axios
         .post('http://localhost/reactProject/maroonTest/deleteQuestion3.php', deleteID)
         .then(res => console.log(res.data))
-      alert('Question Deleted Succesfully')
+      handleDeleteClose()
     }
   }
 
@@ -176,6 +175,7 @@ export default function QuestionManagement() {
 
   const [open, setOpen] = React.useState(false)
   const [openEdit, setOpenEdit] = React.useState(false)
+  const [openDelete, setOpenDelete] = React.useState(false)
 
   const handleClickOpen = () => {
     setOpen(true)
@@ -208,6 +208,22 @@ export default function QuestionManagement() {
     handleEditClose()
   }
 
+  const handleClickDeleteOpen = () => {
+    setOpenDelete(true)
+  }
+
+  const handleDeleteClose = () => {
+    setOpenDelete(false)
+  }
+
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const handleSearchChange = event => {
+    setSearchTerm(event.target.value)
+  }
+
+  const filteredQuestions = questions.filter(b => b.text.toLowerCase().includes(searchTerm.toLowerCase()))
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
@@ -228,15 +244,15 @@ export default function QuestionManagement() {
                     onChange={handleCompetitionChange}
                   >
                     <MenuItem value=''>Select Competition</MenuItem>
-                    <MenuItem value='youth'>Youth Award</MenuItem>
-                    <MenuItem value='standard'>Standard Award</MenuItem>
+                    <MenuItem value='youth'>Standard Award</MenuItem>
+                    <MenuItem value='standard'>Youth Award</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
             </Grid>
           </CardContent>
 
-          <QuestionsHeader value={value} handleFilter={handleFilter} toggle={handleClickOpen} />
+          <QuestionsHeader value={searchTerm} handleFilter={handleSearchChange} toggle={handleClickOpen} />
 
           <Divider />
 
@@ -245,16 +261,18 @@ export default function QuestionManagement() {
               <TableHead>
                 <TableRow>
                   <StyledTableCell>Question ID</StyledTableCell>
-                  <StyledTableCell>Question</StyledTableCell>
+                  <StyledTableCell>Question No.</StyledTableCell>
+                  <StyledTableCell>Question Text</StyledTableCell>
                   <StyledTableCell>Action</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {questions?.map((item, index) => (
+                {filteredQuestions?.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell component='th' scope='row'>
                       {item.id}
                     </TableCell>
+                    <StyledTableCell>{item.question_number}</StyledTableCell>
                     <StyledTableCell>{item.text}</StyledTableCell>
                     <TableCell>
                       <Button
@@ -275,8 +293,9 @@ export default function QuestionManagement() {
                         sx={{ color: 'text.primary' }}
                         onClick={event => {
                           event.preventDefault()
-                          deleteQuestion(item.id)
-                          setDeleteID(prevValue => ({ ...prevValue, id: item.id }))
+                          setDeleteIDSaved(item.id)
+                          setDeleteID({ id: item.id })
+                          handleClickDeleteOpen()
                         }}
                       >
                         <Icon icon='mdi:delete' fontSize={20} />
@@ -320,8 +339,14 @@ export default function QuestionManagement() {
         </DialogActions>
       </Dialog>
 
-      <Dialog fullWidth maxWidth='md' onClose={handleClose} aria-labelledby='customized-dialog-title' open={openEdit}>
-        <DialogTitle id='customized-dialog-title' onClose={handleClose}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        onClose={handleEditClose}
+        aria-labelledby='customized-dialog-title'
+        open={openEdit}
+      >
+        <DialogTitle id='customized-dialog-title' onClose={handleEditClose}>
           Editing Question
         </DialogTitle>
         <DialogContent>
@@ -347,6 +372,27 @@ export default function QuestionManagement() {
 
           <Button onClick={handleEditClose} variant='outlined'>
             Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DELETE CONFIRMATION DIALOGUE */}
+      <Dialog
+        open={openDelete}
+        onClose={handleDeleteClose}
+        aria-labelledby='alert-dialog-title'
+        aria-describedby='alert-dialog-description'
+      >
+        <DialogTitle id='alert-dialog-title'>Delete Question ID | {deleteID.id}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id='alert-dialog-description'>
+            Are you sure you want to delete this Question?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose}>Disagree</Button>
+          <Button onClick={deleteQuestion} autoFocus>
+            Agree
           </Button>
         </DialogActions>
       </Dialog>

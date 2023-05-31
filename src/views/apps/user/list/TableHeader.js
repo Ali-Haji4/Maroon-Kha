@@ -25,8 +25,8 @@ const TableHeader = props => {
           size='small'
           value={value}
           sx={{ mr: 6, mb: 2 }}
-          placeholder='Search User'
-          onChange={e => handleFilter(e.target.value)}
+          placeholder='Search User By Name'
+          onChange={handleFilter}
         />
 
         <Button sx={{ mb: 2 }} onClick={toggle} variant='contained'>

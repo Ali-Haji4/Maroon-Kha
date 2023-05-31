@@ -18,12 +18,12 @@ import OptionsMenu from 'src/@core/components/option-menu'
 
 const EcommerceSalesOverview = () => {
   const urlParticipants = 'http://localhost/reactProject/maroonTest/participantsList.php'
-  const urlSubmissions = 'http://localhost/reactProject/maroonTest/answersList.php'
-  const urlCountries = 'http://localhost/reactProject/maroonTest/uniqueCountries.php'
+  const urlSubmissions = 'http://localhost/reactProject/maroonTest/completedSubmissionsList.php'
+  const urlGender = 'http://localhost/reactProject/maroonTest/genderStats.php'
 
   const [participantsList, setParticipantsList] = React.useState([])
   const [submissionsList, setSubmissionsList] = React.useState([])
-  const [uniqueCountries, setUniqueCountries] = React.useState([])
+  const [genderedList, setGenderedList] = React.useState([])
 
   //Fetching data according to the current role
   useEffect(() => {
@@ -34,6 +34,8 @@ const EcommerceSalesOverview = () => {
         setParticipantsList(data)
       })
 
+    console.log(participantsList)
+
     //REPLACE THE URL ONCE THE PARTICIPANT TABLE IS LINKED (IT IS CURRENLTY ADMIN IN THE PHP FILE)
     axios
       .get(urlSubmissions)
@@ -41,32 +43,35 @@ const EcommerceSalesOverview = () => {
       .then(data => {
         setSubmissionsList(data)
       })
+
     axios
-      .get(urlCountries)
+      .get(urlGender)
       .then(response => response.data)
       .then(data => {
-        setUniqueCountries(data)
+        setGenderedList(data)
       })
+
+    console.log(submissionsList)
   }, [])
 
   const salesData = [
     {
-      stats: participantsList.length,
+      stats: genderedList[0]?.maleCount,
       color: 'primary',
-      title: 'Total Applicants',
-      icon: <Icon icon='mdi:account-outline' />
+      title: 'Male Applicants',
+      icon: <Icon icon='mdi:gender-male' />
     },
     {
-      stats: submissionsList.length,
+      stats: genderedList[0]?.femaleCount,
       color: 'warning',
-      title: 'Total Submissions',
-      icon: <Icon icon='mdi:file' />
+      title: 'Female Applicants',
+      icon: <Icon icon='mdi:gender-female' />
     },
     {
-      color: 'info',
-      stats: uniqueCountries.length,
-      title: 'Unique Countries',
-      icon: <Icon icon='mdi:globe' />
+      color: 'success',
+      stats: `${submissionsList?.length} / ${participantsList?.length}`,
+      title: 'Completed Submissions',
+      icon: <Icon icon='mdi:file' />
     }
   ]
 
@@ -92,7 +97,7 @@ const EcommerceSalesOverview = () => {
     <Card>
       <CardHeader
         sx={{ pb: 3.25 }}
-        title='Competition Overview'
+        title='Applicants Overview'
         titleTypographyProps={{ variant: 'h6' }}
         action={
           <OptionsMenu

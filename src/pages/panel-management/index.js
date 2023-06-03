@@ -18,6 +18,7 @@ import IconButton from '@mui/material/IconButton'
 import Avatar from '@mui/material/Avatar'
 import AvatarGroup from '@mui/material/AvatarGroup'
 import Link from '@mui/material/Link'
+import InputAdornment from '@mui/material/InputAdornment'
 
 import TableContainer from '@mui/material/TableContainer'
 import FormControlLabel from '@mui/material/FormControlLabel'
@@ -44,7 +45,9 @@ const ACLPage = () => {
   const [isIndeterminateCheckbox, setIsIndeterminateCheckbox] = useState(false)
   const handleClickOpen = () => setOpen(true)
   const [submittedCheckbox, setSubmittedCheckbox] = useState({ id: [], panel_id: '' })
+  const [submittedRemovedCheckbox, setSubmittedRemovedCheckbox] = useState({ id: [] })
   const [currentPanelID, setCurrentPanelID] = useState()
+  const [answersRange, setAnswersRange] = useState({ from: '', to: '', id: '' })
 
   const rolesArr = [
     'User Management',
@@ -103,7 +106,6 @@ const ACLPage = () => {
 
   const handleSubmit = () => {
     if (dialogTitle === 'Add') {
-      console.log('Beginning submission')
       setSubmittedCheckbox((submittedCheckbox.id = selectedCheckbox))
       console.log(submittedCheckbox)
 
@@ -112,20 +114,30 @@ const ACLPage = () => {
         .then(res => console.log(res.data))
 
       console.log('Title:' + dialogTitle)
+
       setRefresher(prevState => !prevState)
     } else if (dialogTitle === 'Edit') {
-      console.log('Beginning submission')
-
       setSubmittedCheckbox((submittedCheckbox.id = selectedCheckbox))
-
-      // setSubmittedCheckbox(((submittedCheckbox = selectedCheckbox), (submittedCheckbox.panel_id = currentPanelID)))
-      console.log(submittedCheckbox)
 
       axios
         .post('http://localhost/reactProject/maroonTest/updatePanel.php', submittedCheckbox)
         .then(res => console.log(res.data))
-      console.log('Current panel ID:' + currentPanelID + ' Title:' + dialogTitle + ' Checkbox ' + submittedCheckbox.id)
-      console.log()
+
+      setSubmittedRemovedCheckbox((submittedRemovedCheckbox.id = removedCheckbox))
+
+      axios
+        .post('http://localhost/reactProject/maroonTest/removeJudgesFromPanel.php', submittedRemovedCheckbox)
+        .then(res => console.log(res.data))
+
+      if (answersRange.from <= answersRange.to) {
+        axios
+          .post('http://localhost/reactProject/maroonTest/panelAnswerRange.php', answersRange)
+          .then(res => console.log(res.data))
+      } else {
+        console.log(answersRange.from + ' ' + answersRange.to)
+        alert('Wrong entry')
+      }
+
       setRefresher(prevState => !prevState)
     } else {
       console.log('ERROR 404')
@@ -133,7 +145,10 @@ const ACLPage = () => {
 
     setOpen(false)
     setSelectedCheckbox([])
+    setRemovedCheckbox([])
     setIsIndeterminateCheckbox(false)
+    setIsIndeterminateRemovedCheckbox(false)
+    setAnswersRange({ from: 0, to: 0, id: '' })
   }
 
   const handleSelectAllCheckbox = () => {
@@ -178,6 +193,52 @@ const ACLPage = () => {
     setOpenDelete(false)
   }
 
+  //REMOVING JUDGE TESTING AREA
+
+  const [removedCheckbox, setRemovedCheckbox] = useState([])
+  const [isIndeterminateRemovedCheckbox, setIsIndeterminateRemovedCheckbox] = useState(false)
+
+  const handleSelectAllRemovedCheckbox = () => {
+    if (isIndeterminateCheckbox) {
+      setRemovedCheckbox([])
+    } else {
+      judge.forEach(row => {
+        const id = row.id
+        togglePermissionRemove(`${id}`)
+      })
+    }
+  }
+
+  const togglePermissionRemove = id => {
+    const arr = removedCheckbox
+    if (removedCheckbox.includes(id)) {
+      arr.splice(arr.indexOf(id), 1)
+      setRemovedCheckbox([...arr])
+      console.log(removedCheckbox)
+    } else {
+      arr.push(id)
+      setRemovedCheckbox([...arr])
+      console.log(removedCheckbox)
+    }
+  }
+
+  useEffect(() => {
+    if (removedCheckbox.length > 0 && removedCheckbox.length < rolesArr.length * 3) {
+      setIsIndeterminateRemovedCheckbox(true)
+    } else {
+      setIsIndeterminateRemovedCheckbox(false)
+    }
+  }, [removedCheckbox])
+
+  //QUESTION ASSIGNMENT SECTION
+  function handleDataChange(event) {
+    setAnswersRange({
+      ...answersRange,
+      [event.target.name]: event.target.value
+    })
+    console.log(answersRange)
+  }
+
   return (
     <Grid container spacing={6}>
       <Grid item md={6} xs={12}>
@@ -209,7 +270,10 @@ const ACLPage = () => {
         </Grid>
       ) : null}
       <Grid item xs={12}>
-        <CardHeader title='Youth Award Panels' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+        <CardHeader
+          title='King Hamad Award Panels'
+          sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }}
+        />
         <Divider></Divider>
         <Grid container spacing={6} className='match-height' sx={{ mt: '2px' }}>
           {panel?.map((item, index) => (
@@ -220,7 +284,13 @@ const ACLPage = () => {
                     <Typography variant='body2'>
                       Panel {index + 1} | ID {item.id}
                     </Typography>
+                    <Typography variant='body2'>
+                      {item.answer_range_from != -1
+                        ? `Answers Range ${item.answer_range_from} - ${item.answer_range_to}`
+                        : `Not Assigned`}
+                    </Typography>
                   </Box>
+
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                       <Typography variant='h6'>{item.title}</Typography>
@@ -247,6 +317,14 @@ const ACLPage = () => {
                             ...existingValues,
                             panel_id: item.id,
                             id: selectedCheckbox
+                          }))
+                          setSubmittedRemovedCheckbox(existingValues => ({
+                            ...existingValues,
+                            id: removedCheckbox
+                          }))
+                          setAnswersRange(existingValues => ({
+                            ...existingValues,
+                            id: item.id
                           }))
                         }}
                       >
@@ -310,15 +388,50 @@ const ACLPage = () => {
       <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={open}>
         <DialogTitle sx={{ textAlign: 'center' }}>
           <Typography variant='h5' component='span'>
-            {`${dialogTitle} Panel`}
+            {`${dialogTitle} Panel | ID ${submittedCheckbox.panel_id}`}
           </Typography>
           <Typography variant='body2'>Set Panel Judges</Typography>
         </DialogTitle>
         <DialogContent sx={{ p: { xs: 6, sm: 12 } }}>
           <Box sx={{ my: 4 }}>
-            <Typography variant='h4'>Youth Award</Typography>
+            <Typography variant='h4'>KHA Panel</Typography>
           </Box>
-
+          <Divider></Divider>
+          <Divider></Divider>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <Typography variant='h6' sx={{ m: 1, width: '25ch' }}>
+              Answers Range
+            </Typography>
+            <TextField
+              label='First Entry'
+              id='outlined-start-adornment'
+              size='small'
+              type='number'
+              name='from'
+              value={answersRange.from}
+              onChange={handleDataChange}
+              sx={{ m: 1, width: '25ch' }}
+              InputProps={{
+                startAdornment: <InputAdornment position='start'>From</InputAdornment>,
+                inputProps: { min: 1 }
+              }}
+            />
+            <TextField
+              label='Last Entry'
+              id='outlined-start-adornment'
+              size='small'
+              type='number'
+              name='to'
+              value={answersRange.to}
+              onChange={handleDataChange}
+              sx={{ m: 1, width: '25ch' }}
+              InputProps={{
+                startAdornment: <InputAdornment position='start'>To</InputAdornment>
+              }}
+            />
+          </Box>
+          <Divider></Divider>
+          <Divider></Divider>
           <TableContainer>
             <Table size='small'>
               <TableHead>
@@ -334,8 +447,11 @@ const ACLPage = () => {
                         '& svg': { ml: 1, cursor: 'pointer' }
                       }}
                     >
-                      Unassigned Judges
-                      <Tooltip placement='top' title='These are the judges that are not assigned with a panel yet'>
+                      Judges List
+                      <Tooltip
+                        placement='top'
+                        title='The judges that are not assigned are identified, and the number on the right is their panel ID if they are already assigned to a panel'
+                      >
                         <Box sx={{ display: 'flex' }}>
                           <Icon icon='mdi:information-outline' fontSize='1rem' />
                         </Box>
@@ -344,14 +460,14 @@ const ACLPage = () => {
                   </TableCell>
                   <TableCell colSpan={3}>
                     <FormControlLabel
-                      label='Select All'
+                      label='Select All Remove'
                       sx={{ '& .MuiTypography-root': { textTransform: 'capitalize' } }}
                       control={
                         <Checkbox
                           size='small'
-                          onChange={handleSelectAllCheckbox}
-                          indeterminate={isIndeterminateCheckbox}
-                          checked={selectedCheckbox.length === rolesArr.length * 3}
+                          onChange={handleSelectAllRemovedCheckbox}
+                          indeterminate={isIndeterminateRemovedCheckbox}
+                          checked={removedCheckbox.length === rolesArr.length * 3}
                         />
                       }
                     />
@@ -373,19 +489,38 @@ const ACLPage = () => {
                       >
                         {i.name} | {i.panel_id === '0' ? 'Not Assigned' : i.panel_id}
                       </TableCell>
-                      <TableCell>
-                        <FormControlLabel
-                          label='Add'
-                          control={
-                            <Checkbox
-                              size='small'
-                              id={`${id}-read`}
-                              onChange={() => togglePermission(`${id}`)}
-                              checked={selectedCheckbox.includes(`${id}`)}
-                            />
-                          }
-                        />
-                      </TableCell>
+
+                      {i.panel_id !== submittedCheckbox.panel_id && (
+                        <TableCell>
+                          <FormControlLabel
+                            label='Add'
+                            control={
+                              <Checkbox
+                                size='small'
+                                id={`${id}-read`}
+                                onChange={() => togglePermission(`${id}`)}
+                                checked={selectedCheckbox.includes(`${id}`)}
+                              />
+                            }
+                          />
+                        </TableCell>
+                      )}
+
+                      {i.panel_id === submittedCheckbox.panel_id && (
+                        <TableCell>
+                          <FormControlLabel
+                            label='Remove'
+                            control={
+                              <Checkbox
+                                size='small'
+                                id={`${id}-remove`}
+                                onChange={() => togglePermissionRemove(`${id}`)}
+                                checked={removedCheckbox.includes(`${id}`)}
+                              />
+                            }
+                          />
+                        </TableCell>
+                      )}
                     </TableRow>
                   )
                 })}

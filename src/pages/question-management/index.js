@@ -82,22 +82,13 @@ export default function QuestionManagement() {
   const [editedQuestionText, setEditedQuestionText] = React.useState({ questionText: '', id: '' })
 
   useEffect(() => {
-    if (competition === 'youth') {
-      axios
-        .get(urlQuestions)
-        .then(response => response.data)
-        .then(data => {
-          setQuestions(data)
-        })
-    } else {
-      axios
-        .get(urlQuestions2)
-        .then(response => response.data)
-        .then(data => {
-          setQuestions(data)
-        })
-    }
-  }, [competition, questions])
+    axios
+      .get(urlQuestions)
+      .then(response => response.data)
+      .then(data => {
+        setQuestions(data)
+      })
+  }, [questions])
 
   const handleFilter = useCallback(val => {
     setValue(val)
@@ -245,7 +236,6 @@ export default function QuestionManagement() {
                   >
                     <MenuItem value=''>Select Competition</MenuItem>
                     <MenuItem value='youth'>Standard Award</MenuItem>
-                    <MenuItem value='standard'>Youth Award</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>

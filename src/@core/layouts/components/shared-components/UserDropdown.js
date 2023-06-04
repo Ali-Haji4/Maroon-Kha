@@ -128,7 +128,7 @@ const UserDropdown = props => {
             Profile
           </Box>
         </MenuItem>
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
+        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/Inbox')}>
           <Box sx={styles}>
             <Icon icon='mdi:email-outline' />
             Inbox

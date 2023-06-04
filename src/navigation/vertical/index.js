@@ -29,15 +29,8 @@ const navigation = () => {
       path: '/acl',
       action: 'read',
       subject: 'acl-page',
-      icon: 'mdi:shield-outline',
-      title: 'Access Control'
-    },
-    {
-      path: '/loginJudge',
-      action: 'read',
-      subject: 'login-judge',
-      icon: 'mdi:shield-outline',
-      title: 'Access Control'
+      icon: 'mdi:account-edit-outline',
+      title: 'Competition Interface'
     }
   ]
 }

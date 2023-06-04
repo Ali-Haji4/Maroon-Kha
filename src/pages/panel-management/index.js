@@ -19,7 +19,7 @@ import Avatar from '@mui/material/Avatar'
 import AvatarGroup from '@mui/material/AvatarGroup'
 import Link from '@mui/material/Link'
 import InputAdornment from '@mui/material/InputAdornment'
-
+import { styled } from '@mui/material/styles'
 import TableContainer from '@mui/material/TableContainer'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import FormControl from '@mui/material/FormControl'
@@ -27,10 +27,11 @@ import Table from '@mui/material/Table'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
+import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import Tooltip from '@mui/material/Tooltip'
 import Checkbox from '@mui/material/Checkbox'
 import { Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, TextField } from '@mui/material'
+import Paper from '@mui/material/Paper'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -48,6 +49,10 @@ const ACLPage = () => {
   const [submittedRemovedCheckbox, setSubmittedRemovedCheckbox] = useState({ id: [] })
   const [currentPanelID, setCurrentPanelID] = useState()
   const [answersRange, setAnswersRange] = useState({ from: '', to: '', id: '' })
+  const [answersList, setAnswers] = React.useState([{}])
+
+  //Axios function to retrieve admins from database and insert them into the admins
+  const urlAnswers = 'http://localhost/reactProject/maroonTest/answersList.php'
 
   const rolesArr = [
     'User Management',
@@ -60,6 +65,28 @@ const ACLPage = () => {
     'Repository Management',
     'Payroll'
   ]
+
+  const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14
+    }
+  }))
+
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover
+    },
+
+    // hide last border
+    '&:last-child td, &:last-child th': {
+      border: 0
+    }
+  }))
+
   const [judgeName, setJudgeName] = useState([])
 
   // ** Hooks
@@ -84,6 +111,13 @@ const ACLPage = () => {
       .then(response => response.data)
       .then(data => {
         setJudge(data)
+      })
+
+    axios
+      .get(urlAnswers)
+      .then(response => response.data)
+      .then(data => {
+        setAnswers(data)
       })
     console.log(panel)
   }, [refresh])
@@ -257,13 +291,14 @@ const ACLPage = () => {
       {ability?.can('read', 'analytics') ? (
         <Grid item md={6} xs={12}>
           <Card>
-            <CardHeader title='Segmentation' />
+            <CardHeader title='Answers Range Assignment' />
             <CardContent>
               <Typography sx={{ mb: 4 }}>
-                As there are two competitions, each of them has a seperate panel viewing and management section
+                When you assign the same answer range or a range that crosses over to a pretermenined range from a
+                previous panel, the newest panel will take precedence
               </Typography>
               <Typography sx={{ color: 'error.main' }}>
-                Ensure selecting the appropriate competition when working with panels
+                You can check the current panel ID for each answer from the answers list below
               </Typography>
             </CardContent>
           </Card>
@@ -558,6 +593,45 @@ const ACLPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Grid item xs={12} sx={{ mt: 20 }}>
+        <Typography variant='h6' sx={{ ml: 5, pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }}>
+          Participants Answer List
+        </Typography>
+        <Divider></Divider>
+        <Box sx={{ overflow: 'auto' }}>
+          <Box sx={{ width: '100%', display: 'table', tableLayout: 'fixed' }}>
+            <TableContainer component={Paper} sx={{ minWidth: 700, mt: 10 }}>
+              <Table sx={{ minWidth: 700 }} aria-label='customized table'>
+                <TableHead>
+                  <StyledTableRow>
+                    <StyledTableCell>Answer ID</StyledTableCell>
+                    <StyledTableCell>User ID</StyledTableCell>
+                    <StyledTableCell>Panel ID</StyledTableCell>
+                    <StyledTableCell>Judge 1 Status</StyledTableCell>
+                    <StyledTableCell>Judge 2 Status</StyledTableCell>
+                    <StyledTableCell>Judge 3 Status</StyledTableCell>
+                    <StyledTableCell>Final Validation</StyledTableCell>
+                  </StyledTableRow>
+                </TableHead>
+                <TableBody>
+                  {answersList?.map((item, index) => (
+                    <StyledTableRow key={index}>
+                      <StyledTableCell>{item.ansID}</StyledTableCell>
+                      <StyledTableCell>{item.userID}</StyledTableCell>
+                      <StyledTableCell>{item.pID}</StyledTableCell>
+                      <StyledTableCell>{item.j1stat}</StyledTableCell>
+                      <StyledTableCell>{item.j2stat}</StyledTableCell>
+                      <StyledTableCell>{item.j3stat}</StyledTableCell>
+                      <StyledTableCell>{item.finalValidation}</StyledTableCell>
+                    </StyledTableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Box>
+      </Grid>
     </Grid>
   )
 }

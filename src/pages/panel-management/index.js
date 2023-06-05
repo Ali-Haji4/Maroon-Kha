@@ -431,42 +431,46 @@ const ACLPage = () => {
           <Box sx={{ my: 4 }}>
             <Typography variant='h4'>KHA Panel</Typography>
           </Box>
-          <Divider></Divider>
-          <Divider></Divider>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <Typography variant='h6' sx={{ m: 1, width: '25ch' }}>
-              Answers Range
-            </Typography>
-            <TextField
-              label='First Entry'
-              id='outlined-start-adornment'
-              size='small'
-              type='number'
-              name='from'
-              value={answersRange.from}
-              onChange={handleDataChange}
-              sx={{ m: 1, width: '25ch' }}
-              InputProps={{
-                startAdornment: <InputAdornment position='start'>From</InputAdornment>,
-                inputProps: { min: 1 }
-              }}
-            />
-            <TextField
-              label='Last Entry'
-              id='outlined-start-adornment'
-              size='small'
-              type='number'
-              name='to'
-              value={answersRange.to}
-              onChange={handleDataChange}
-              sx={{ m: 1, width: '25ch' }}
-              InputProps={{
-                startAdornment: <InputAdornment position='start'>To</InputAdornment>
-              }}
-            />
-          </Box>
-          <Divider></Divider>
-          <Divider></Divider>
+          {dialogTitle === 'Edit' && (
+            <>
+              <Divider></Divider>
+              <Divider></Divider>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <Typography variant='h6' sx={{ m: 1, width: '25ch' }}>
+                  Answers Range
+                </Typography>
+                <TextField
+                  label='First Entry'
+                  id='outlined-start-adornment'
+                  size='small'
+                  type='number'
+                  name='from'
+                  value={answersRange.from}
+                  onChange={handleDataChange}
+                  sx={{ m: 1, width: '25ch' }}
+                  InputProps={{
+                    startAdornment: <InputAdornment position='start'>From</InputAdornment>,
+                    inputProps: { min: 1 }
+                  }}
+                />
+                <TextField
+                  label='Last Entry'
+                  id='outlined-start-adornment'
+                  size='small'
+                  type='number'
+                  name='to'
+                  value={answersRange.to}
+                  onChange={handleDataChange}
+                  sx={{ m: 1, width: '25ch' }}
+                  InputProps={{
+                    startAdornment: <InputAdornment position='start'>To</InputAdornment>
+                  }}
+                />
+              </Box>
+              <Divider></Divider>
+              <Divider></Divider>
+            </>
+          )}
           <TableContainer>
             <Table size='small'>
               <TableHead>

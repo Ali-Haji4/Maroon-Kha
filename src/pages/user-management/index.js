@@ -1273,7 +1273,7 @@ export default function UserManagement() {
           <TextField
             margin='dense'
             id='outlined-multiline-flexible-email'
-            label='Email Name'
+            label='Email Address'
             type='email'
             fullWidth
             variant='standard'

@@ -368,9 +368,19 @@ const ACLPage2 = () => {
 
   //Snackbar
   const [open, setOpen] = React.useState(false)
+  const [openSubmit, setOpenSubmit] = React.useState(false)
+  const [openSave, setOpenSave] = React.useState(false)
 
   const handleClick = () => {
     setOpen(true)
+  }
+
+  const handleClickSubmit = () => {
+    setOpenSubmit(true)
+  }
+
+  const handleClickSave = () => {
+    setOpenSave(true)
   }
 
   const handleClose = (event, reason) => {
@@ -379,6 +389,8 @@ const ACLPage2 = () => {
     }
 
     setOpen(false)
+    setOpenSubmit(false)
+    setOpenSave(false)
   }
 
   const action = (
@@ -404,6 +416,7 @@ const ACLPage2 = () => {
   function handleSubmit() {
     if (validate(answers)) {
       console.log('success')
+      setOpenSubmit(true)
     } else {
       console.log('fail')
     }
@@ -989,12 +1002,12 @@ const ACLPage2 = () => {
         </Grid>
       </Grid>
       <Grid item md={10} xs={12} m={4}>
-        <Box textAlign='center'>
+        <Box sx={{ mt: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {' '}
-          <Button variant='contained' size='large' sx={{ mr: 20 }} onClick={handleSubmit}>
+          <Button variant='contained' size='large' onClick={handleSubmit}>
             Submit
           </Button>
-          <Button variant='outlined' size='large'>
+          <Button variant='outlined' size='large' onClick={handleClickSave}>
             Save Draft
           </Button>
         </Box>
@@ -1002,6 +1015,16 @@ const ACLPage2 = () => {
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose} message='Note archived' action={action}>
         <Alert onClose={handleClose} severity='error' sx={{ width: '100%' }}>
           Please fill in all the required fields (*)
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openSave} autoHideDuration={6000} onClose={handleClose} message='Note archived' action={action}>
+        <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
+          Answer Draft Saved Succesfully
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openSubmit} autoHideDuration={6000} onClose={handleClose} message='Note archived' action={action}>
+        <Alert onClose={handleClose} severity='success' sx={{ width: '100%' }}>
+          Answers Submitted Succesfully
         </Alert>
       </Snackbar>
     </Grid>

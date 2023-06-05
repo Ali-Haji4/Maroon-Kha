@@ -4,25 +4,71 @@ import jwt from 'jsonwebtoken'
 // ** Mock Adapter
 import mock from 'src/@fake-db/mock'
 
+//Extra React imports
+import axios from 'axios'
+import React, { useContext, useState, useEffect } from 'react'
+
 // ** Default AuthConfig
 import defaultAuthConfig from 'src/configs/auth'
+
+// function AdminFill() {
+//   const [adminList, setAdminList] = React.useState([])
+//   const urlAdmins = 'http://localhost/reactProject/maroonTest/adminsList.php'
+//   useEffect(() => {
+//     axios
+//       .get(urlAdmins)
+//       .then(response => response.data)
+//       .then(data => {
+//         setAdminList(data)
+//       })
+//     console.log('reached here')
+
+//     console.log('looping')
+//   }, [])
+
+//   //Fetching data according to the current role
+
+//   const users = adminList?.flatMap(({ id, password, name, email }) => {
+//     return [
+//       {
+//         id: id,
+//         role: 'admin',
+//         password: password,
+//         fullName: name,
+//         username: 'johndoe',
+//         email: email
+//       }
+//     ]
+//   })
+//   console.log(users)
+
+//   return users
+// }
 
 const users = [
   {
     id: 1,
     role: 'admin',
     password: 'admin',
-    fullName: 'John Doe',
-    username: 'johndoe',
-    email: 'admin@materialize.com'
+    fullName: 'Ali Haji',
+    username: 'alihaji',
+    email: 'aliAdmin@hotmail.com'
   },
   {
     id: 2,
-    role: 'client',
-    password: 'client',
-    fullName: 'Jane Doe',
-    username: 'janedoe',
-    email: 'client@materialize.com'
+    role: 'admin',
+    password: 'admin',
+    fullName: 'Jassim Hussain',
+    username: 'jassimhussain',
+    email: 'jassimAdmin@hotmail.com'
+  },
+  {
+    id: 3,
+    role: 'admin',
+    password: 'admin',
+    fullName: 'Khaleel Hussain',
+    username: 'khaleelhussain',
+    email: 'khaleelAdmin@hotmail.com'
   }
 ]
 

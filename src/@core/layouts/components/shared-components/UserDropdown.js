@@ -29,6 +29,15 @@ const BadgeContentSpan = styled('span')(({ theme }) => ({
   boxShadow: `0 0 0 2px ${theme.palette.background.paper}`
 }))
 
+// const [name, setName] = React.useState()
+// if (localStorage.getItem("userData") === null) {
+//   setName('John Doe')
+// }
+// else {
+//   var user = JSON.parse(localStorage.getItem('userData'))
+// }
+// var user = JSON.parse(localStorage.getItem('userData'))
+
 const UserDropdown = props => {
   // ** Props
   const { settings } = props
@@ -114,7 +123,7 @@ const UserDropdown = props => {
               <Avatar alt='John Doe' src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
             </Badge>
             <Box sx={{ display: 'flex', ml: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 600 }}>John Doe</Typography>
+              <Typography sx={{ fontWeight: 600 }}>Ali Haji</Typography>
               <Typography variant='body2' sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
                 Admin
               </Typography>
